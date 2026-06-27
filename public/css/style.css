@@ -51,12 +51,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .nav-links { display: flex; align-items: center; gap: 2rem; }
 .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: color var(--transition); }
 .nav-links a:hover { color: var(--white); }
+.nav-links a.nav-cta,
 .nav-cta {
   background: linear-gradient(135deg, var(--blue), var(--cyan));
-  color: var(--white); padding: 9px 20px; border-radius: 8px;
+  color: #FFFFFF !important; padding: 9px 20px; border-radius: 8px;
   font-size: 0.85rem; font-weight: 600; transition: opacity var(--transition), transform var(--transition);
 }
-.nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+.nav-links a.nav-cta:hover,
+.nav-cta:hover { color: #FFFFFF !important; opacity: 0.9; transform: translateY(-1px); }
 .hamburger { display: none; flex-direction: column; gap: 5px; padding: 4px; }
 .hamburger span { width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: var(--transition); }
 

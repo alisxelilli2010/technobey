@@ -30,6 +30,9 @@ Route::post('/order', function (Request $request) {
     SiteContent::appendOrder($data);
     \Illuminate\Support\Facades\Log::info('TechnoBey order', $data);
 
+    if ($request->expectsJson() || $request->ajax()) {
+        return response()->json(['ok' => true]);
+    }
     return back()->with('ok', true);
 })->name('order.store');
 

@@ -23,14 +23,64 @@ function filterProducts(cat, btn) {
   });
 }
 
-// Form submit
-function handleSubmit() {
-  const btn = document.querySelector('.submit-btn');
-  btn.textContent = '✅ Sifariş qəbul edildi! Tezliklə əlaqə saxlayacağıq.';
-  btn.style.background = '#16a34a';
+// Məhsul kartından "Sifariş et" klikləyəndə formu doldur
+function selectProduct(linkEl, name, cat, price, unit) {
+  const form = document.getElementById('orderForm');
+  if (!form) return;
+  const catToService = {
+    komputer:  'Kompüter alışı',
+    printer:   'Printer alışı',
+    proyektor: 'Proyektor alışı',
+    aksesuar:  'Digər',
+  };
+  const wantedService = catToService[cat] || 'Digər';
+  const serviceSel = form.querySelector('select[name="service"]');
+  if (serviceSel) {
+    let matched = false;
+    Array.from(serviceSel.options).forEach(opt => {
+      if (opt.value === wantedService || opt.textContent.trim() === wantedService) {
+        serviceSel.value = opt.value;
+        matched = true;
+      }
+    });
+    if (!matched) serviceSel.value = 'Digər';
+  }
+  const notes = form.querySelector('textarea[name="notes"]');
+  if (notes) {
+    const line = `Məhsul: ${name} — ${price} ₼ / ${unit}`;
+    notes.value = notes.value ? line + '\n' + notes.value : line;
+  }
+  // Smooth scroll to form, then focus name field
+  const orderSection = document.getElementById('order');
+  if (orderSection) orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => { const n = form.querySelector('input[name="name"]'); if (n) n.focus(); }, 500);
+}
+
+// Form submit – sifarişi serverə göndər
+async function handleSubmit() {
+  const form = document.getElementById('orderForm');
+  const btn = form.querySelector('.submit-btn');
+  const originalText = btn.textContent;
   btn.disabled = true;
+  btn.textContent = '⏳ Göndərilir...';
+
+  try {
+    const fd = new FormData(form);
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: fd,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    btn.textContent = '✅ Sifariş qəbul edildi! Tezliklə əlaqə saxlayacağıq.';
+    btn.style.background = '#16a34a';
+    form.reset();
+  } catch (e) {
+    btn.textContent = '❌ Xəta baş verdi, yenidən cəhd edin';
+    btn.style.background = '#dc2626';
+  }
   setTimeout(() => {
-    btn.textContent = '🚀 Sifarişi Göndər';
+    btn.textContent = originalText;
     btn.style.background = '';
     btn.disabled = false;
   }, 4000);

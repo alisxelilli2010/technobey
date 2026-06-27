@@ -38,7 +38,8 @@ class SiteContent
         if (!isset($orders['list']) || !is_array($orders['list'])) {
             $orders = ['list' => []];
         }
-        $data['date'] = date('Y-m-d H:i');
+        $tz = new \DateTimeZone('Asia/Baku');
+        $data['date'] = (new \DateTimeImmutable('now', $tz))->format('Y-m-d H:i');
         $orders['list'][] = $data;
         self::save('orders', $orders);
     }

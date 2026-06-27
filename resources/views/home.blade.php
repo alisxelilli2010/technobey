@@ -8,7 +8,7 @@
 <title>TechnoBey – Kompüter, Printer & Proyektor | Bakı</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ asset('css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
 </head>
 <body>
 
@@ -129,7 +129,8 @@
           <p>{{ $p['desc'] ?? '' }}</p>
           <div class="product-footer">
             <div class="price">{{ $p['price'] ?? '' }} ₼ <span>/ {{ $p['unit'] ?? 'ədəd' }}</span></div>
-            <a href="#order" class="btn-order">Sifariş et</a>
+            <a href="#order" class="btn-order"
+               onclick="selectProduct(this, '{{ addslashes($p['name'] ?? '') }}', '{{ $p['cat'] ?? '' }}', '{{ $p['price'] ?? '' }}', '{{ $p['unit'] ?? 'ədəd' }}')">Sifariş et</a>
           </div>
         </div>
       </div>
@@ -366,6 +367,6 @@
   <a href="https://wa.me/{{ $waRaw }}?text={{ $waMsg }}" target="_blank" class="float-btn float-wa" title="WhatsApp">💬</a>
 </div>
 
-<script src="{{ asset('js/main.js') }}"></script>
+<script src="{{ asset('js/main.js') }}?v={{ filemtime(public_path('js/main.js')) }}"></script>
 </body>
 </html>

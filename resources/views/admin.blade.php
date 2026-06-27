@@ -266,8 +266,8 @@
     <div style="font-size:2.5rem;margin-bottom:12px">💻</div>
     <h1>TechnoBey Admin</h1>
     <p>İdarəetmə panelinə daxil olmaq üçün şifrənizi daxil edin</p>
-    <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="off">
-    <input type="password" id="loginPass" placeholder="Şifrə" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="off" oninput="document.getElementById('loginErr').style.display='none'">
+    <input type="password" id="loginPass" placeholder="Şifrə" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Daxil ol →</button>
     <div class="login-err" id="loginErr">❌ İstifadəçi adı və ya şifrə yanlışdır</div>
   </div>
@@ -284,35 +284,35 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-group-label">Ümumi</div>
-      <div class="nav-item active" onclick="showPage('dashboard', this)">
+      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard', this)">
         <span class="nav-ico">📊</span> İdarə Paneli
       </div>
-      <div class="nav-item" onclick="showPage('orders', this)">
+      <div class="nav-item" data-page="orders" onclick="showPage('orders', this)">
         <span class="nav-ico">📋</span> Sifarişlər
       </div>
 
       <div class="nav-group-label">Səhifə Bölmələri</div>
-      <div class="nav-item" onclick="showPage('hero', this)">
+      <div class="nav-item" data-page="hero" onclick="showPage('hero', this)">
         <span class="nav-ico">🎯</span> Hero
       </div>
-      <div class="nav-item" onclick="showPage('services', this)">
+      <div class="nav-item" data-page="services" onclick="showPage('services', this)">
         <span class="nav-ico">🛠️</span> Xidmətlər
       </div>
-      <div class="nav-item" onclick="showPage('why', this)">
+      <div class="nav-item" data-page="why" onclick="showPage('why', this)">
         <span class="nav-ico">⭐</span> Niyə Biz?
       </div>
-      <div class="nav-item" onclick="showPage('about', this)">
+      <div class="nav-item" data-page="about" onclick="showPage('about', this)">
         <span class="nav-ico">ℹ️</span> Haqqımızda
       </div>
-      <div class="nav-item" onclick="showPage('contact', this)">
+      <div class="nav-item" data-page="contact" onclick="showPage('contact', this)">
         <span class="nav-ico">📞</span> Əlaqə
       </div>
 
       <div class="nav-group-label">Məhsullar</div>
-      <div class="nav-item" onclick="showPage('products', this)">
+      <div class="nav-item" data-page="products" onclick="showPage('products', this)">
         <span class="nav-ico">📦</span> Məhsullar
       </div>
-      <div class="nav-item" onclick="showPage('add', this)">
+      <div class="nav-item" data-page="add" onclick="showPage('add', this)">
         <span class="nav-ico">➕</span> Yeni Məhsul
       </div>
     </nav>
@@ -669,7 +669,12 @@
   function enterAdmin() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'flex';
-    renderAll();
+    const hash = (location.hash || '').replace('#', '');
+    const initial = hash && hash !== 'login' && document.getElementById('page' + hash.charAt(0).toUpperCase() + hash.slice(1)) ? hash : 'dashboard';
+    showPage(initial);
+  }
+  function showLoginHash() {
+    try { history.replaceState(null, '', '#login'); } catch {}
   }
 
   function doLogin() {
@@ -688,12 +693,15 @@
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
+    showLoginHash();
   }
 
-  // Auto-login if already logged in earlier
+  // Auto-login if already logged in earlier; otherwise show #login in URL
   try {
     if (localStorage.getItem(AUTH_KEY) === '1') {
       document.addEventListener('DOMContentLoaded', enterAdmin);
+    } else {
+      document.addEventListener('DOMContentLoaded', showLoginHash);
     }
   } catch {}
 
@@ -738,20 +746,18 @@
     await apiSave('products', productsState);
   }
 
-  // Tag nav items so we can find them
-  document.addEventListener('DOMContentLoaded', () => {
-    const nav = document.querySelectorAll('.nav-item');
-    const names = ['dashboard','orders','hero','services','why','about','contact','products','add'];
-    nav.forEach((el, i) => { if (names[i]) el.dataset.page = names[i]; });
-  });
-
   // ===== NAV =====
+  const VALID_PAGES = ['dashboard','orders','hero','services','why','about','contact','products','add'];
+
   async function showPage(name, el) {
+    if (!VALID_PAGES.includes(name)) name = 'dashboard';
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const pageEl = document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1));
     if (pageEl) pageEl.classList.add('active');
+    if (!el) el = document.querySelector(`[data-page=${name}]`);
     if (el) el.classList.add('active');
+    try { history.replaceState(null, '', '#' + name); } catch {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       if (name === 'dashboard') await renderDashboard();
