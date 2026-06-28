@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TechnoBey – Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -58,7 +59,7 @@
     width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--cyan));
     border-radius: 8px; display: grid; place-items: center; font-size: 1rem;
   }
-  .sidebar-logo span { color: var(--cyan); }
+  .sidebar-logo span { color: var(--white); }
   .sidebar-nav { padding: 20px 12px; flex: 1; }
   .nav-group-label {
     font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px;
@@ -90,6 +91,25 @@
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
   .page-header h2 { font-size: 1.5rem; font-weight: 800; color: var(--white); }
   .page-header p { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+
+  /* CHARTS */
+  .charts-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px;
+  }
+  .chart-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .chart-panel.wide { grid-column: span 2; }
+  .chart-header { margin-bottom: 8px; }
+  .chart-header h3 { font-size: 0.82rem; font-weight: 700; color: var(--white); }
+  .chart-body { position: relative; height: 200px; }
+  .chart-body.sm { height: 170px; }
+  @media (max-width: 900px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .chart-panel.wide { grid-column: span 1; }
+    .chart-body, .chart-body.sm { height: 180px; }
+  }
 
   /* STATS */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
@@ -333,6 +353,26 @@
         </div>
       </div>
       <div class="stats-row" id="statsRow"></div>
+
+      <div class="charts-grid">
+        <div class="chart-panel wide">
+          <div class="chart-header"><h3>📈 Son 12 ay – Sifariş / Ziyarətçi</h3></div>
+          <div class="chart-body sm"><canvas id="chartMonthly"></canvas></div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header"><h3>📊 Kateqoriya üzrə məhsullar</h3></div>
+          <div class="chart-body"><canvas id="chartByCat"></canvas></div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header"><h3>📅 Son 7 gün ziyarətçi</h3></div>
+          <div class="chart-body"><canvas id="chartWeekly"></canvas></div>
+        </div>
+        <div class="chart-panel wide">
+          <div class="chart-header"><h3>🛒 Ən çox sifariş edilən xidmət növləri</h3></div>
+          <div class="chart-body sm"><canvas id="chartByService"></canvas></div>
+        </div>
+      </div>
+
       <div class="table-wrap">
         <div style="padding:20px 20px 0; border-bottom:1px solid var(--border); margin-bottom:0">
           <span style="font-size:0.85rem;font-weight:700;color:var(--white)">Son əlavə edilən məhsullar</span>
@@ -657,6 +697,76 @@
   </div>
 </div>
 
+<!-- ORDER DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="orderDeleteModal">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">🗑️</div>
+    <h3>Sifarişi sil?</h3>
+    <p style="color:var(--muted);font-size:0.88rem;margin:12px 0 28px">"<span id="deleteOrderName"></span>" adlı müştərinin sifarişini silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.</p>
+    <div class="modal-actions">
+      <button class="save-btn" style="background:var(--red);box-shadow:none" onclick="confirmDeleteOrder()">Bəli, sil</button>
+      <button class="cancel-btn" onclick="closeOrderDeleteModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC CONFIRM MODAL (used by all delete buttons that don't have a dedicated modal) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px" id="confirmModalIcon">🗑️</div>
+    <h3 id="confirmModalTitle">Silmək istəyirsiniz?</h3>
+    <p style="color:var(--muted);font-size:0.88rem;margin:12px 0 28px" id="confirmModalMsg">Bu əməliyyat geri alına bilməz.</p>
+    <div class="modal-actions">
+      <button class="save-btn" id="confirmModalOk" style="background:var(--red);box-shadow:none">Bəli, sil</button>
+      <button class="cancel-btn" onclick="closeConfirmModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW SERVICE CARD MODAL -->
+<div class="modal-overlay" id="newServiceModal">
+  <div class="modal" style="max-width:520px">
+    <h3>➕ Yeni Xidmət Kartı</h3>
+    <div class="form-row">
+      <div class="form-grp"><label>İkon emoji</label><input type="text" id="newSrvIcon" placeholder="🔧" maxlength="4"></div>
+      <div class="form-grp"><label>Başlıq *</label><input type="text" id="newSrvTitle" placeholder="məs. Kompüter Təmiri"></div>
+      <div class="form-grp full"><label>Açıqlama *</label><textarea id="newSrvDesc" placeholder="Xidmət haqqında qısa məlumat..."></textarea></div>
+      <div class="form-grp"><label>Düymə mətni</label><input type="text" id="newSrvLinkText" placeholder="Sifariş et →"></div>
+      <div class="form-grp"><label>Düymə linki</label><input type="text" id="newSrvLink" placeholder="#order"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="save-btn" onclick="confirmAddServiceCard()">💾 Əlavə et</button>
+      <button class="cancel-btn" onclick="closeNewServiceModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE CARD DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="srvDeleteModal">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">🗑️</div>
+    <h3>Xidmət kartını sil?</h3>
+    <p style="color:var(--muted);font-size:0.88rem;margin:12px 0 28px">"<span id="deleteSrvName"></span>" kartını silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.</p>
+    <div class="modal-actions">
+      <button class="save-btn" style="background:var(--red);box-shadow:none" onclick="confirmRemoveServiceCard()">Bəli, sil</button>
+      <button class="cancel-btn" onclick="closeSrvDeleteModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLEAR ALL ORDERS CONFIRM MODAL -->
+<div class="modal-overlay" id="clearOrdersModal">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">⚠️</div>
+    <h3>Bütün sifarişləri sil?</h3>
+    <p style="color:var(--muted);font-size:0.88rem;margin:12px 0 28px">Bütün sifarişlər birdəfəlik silinəcək. Bu əməliyyat geri alına bilməz.</p>
+    <div class="modal-actions">
+      <button class="save-btn" style="background:var(--red);box-shadow:none" onclick="confirmClearOrders()">Bəli, hamısını sil</button>
+      <button class="cancel-btn" onclick="closeClearOrdersModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -751,6 +861,13 @@
 
   async function showPage(name, el) {
     if (!VALID_PAGES.includes(name)) name = 'dashboard';
+    // Əgər artıq başqa bölmədəyiksə və yeni bölməyə keçid baş verirsə → səhifəni tam yenilə
+    const currentHash = (location.hash || '').replace('#', '');
+    if (currentHash && currentHash !== 'login' && currentHash !== name && VALID_PAGES.includes(currentHash)) {
+      location.hash = '#' + name;
+      location.reload();
+      return;
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const pageEl = document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1));
@@ -785,18 +902,26 @@
 
   // ===== DASHBOARD =====
   const catLabels = { komputer: '💻 Kompüterlər', printer: '🖨️ Printerlər', proyektor: '📽️ Proyektorlar', aksesuar: '🖱️ Aksesuarlar' };
+  const _charts = {};
+
   async function renderDashboard() {
     const products = await getProducts();
-    const counts = { komputer: 0, printer: 0, proyektor: 0, aksesuar: 0 };
-    products.forEach(p => { if (counts[p.cat] !== undefined) counts[p.cat]++; });
-    const ordersData = await apiGet('orders');
-    const orderCount = (ordersData.list || []).length;
+    const stats = await fetch('/api/stats').then(r => r.json()).catch(() => null);
+    if (!stats) { showToast('❌ Statistika yüklənmədi', true); return; }
+
+    const s = stats.summary;
     document.getElementById('statsRow').innerHTML = `
-      <div class="stat-card"><div class="label">Ümumi məhsul</div><div class="value">${products.length}<span>+</span></div></div>
-      <div class="stat-card"><div class="label">Sifarişlər</div><div class="value">${orderCount}</div></div>
-      <div class="stat-card"><div class="label">Kompüterlər</div><div class="value">${counts.komputer}</div></div>
-      <div class="stat-card"><div class="label">Printerlər</div><div class="value">${counts.printer}</div></div>
+      <div class="stat-card"><div class="label">Bu ay sifariş</div><div class="value">${s.monthOrders}<span></span></div></div>
+      <div class="stat-card"><div class="label">Bu ay ziyarətçi</div><div class="value">${s.monthVisits}<span></span></div></div>
+      <div class="stat-card"><div class="label">Ümumi məhsul</div><div class="value">${s.totalProducts}<span>+</span></div></div>
+      <div class="stat-card"><div class="label">Ümumi sifariş</div><div class="value">${s.totalOrders}<span></span></div></div>
     `;
+
+    renderChartMonthly(stats.monthly);
+    renderChartByCat(stats.byCat);
+    renderChartWeekly(stats.weekly);
+    renderChartByService(stats.byService);
+
     const recent = products.slice(-5).reverse();
     document.getElementById('recentTableBody').innerHTML = recent.length
       ? recent.map(p => `<tr>
@@ -811,34 +936,173 @@
       : '<tr><td colspan="4"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir məhsul yoxdur</p></div></td></tr>';
   }
 
+  function destroyChart(key) {
+    if (_charts[key]) { _charts[key].destroy(); delete _charts[key]; }
+  }
+
+  function chartTheme() {
+    return {
+      grid: 'rgba(123,141,176,0.15)',
+      ticks: '#7B8DB0',
+      legend: '#E8EEFF',
+      font: { size: 10 },
+      legendFont: { size: 11 },
+    };
+  }
+
+  function renderChartMonthly(data) {
+    destroyChart('monthly');
+    const ctx = document.getElementById('chartMonthly').getContext('2d');
+    const t = chartTheme();
+    _charts.monthly = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label: 'Sifariş', data: data.orders, borderColor: '#0057FF', backgroundColor: 'rgba(0,87,255,0.15)', tension: 0.35, fill: true, borderWidth: 2 },
+          { label: 'Ziyarətçi', data: data.visits, borderColor: '#00C2FF', backgroundColor: 'rgba(0,194,255,0.10)', tension: 0.35, fill: true, borderWidth: 2 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: t.legend, font: t.legendFont, boxWidth: 10 } } },
+        scales: {
+          x: { ticks: { color: t.ticks, font: t.font }, grid: { color: t.grid } },
+          y: { ticks: { color: t.ticks, precision: 0, font: t.font }, grid: { color: t.grid }, beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  function renderChartByCat(byCat) {
+    destroyChart('byCat');
+    const ctx = document.getElementById('chartByCat').getContext('2d');
+    const t = chartTheme();
+    const labels = Object.keys(byCat).map(k => catLabels[k] || k);
+    const values = Object.values(byCat);
+    _charts.byCat = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: ['#0057FF','#00C2FF','#16a34a','#d97706','#a855f7','#ec4899'],
+          borderColor: '#0A1128', borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: t.legend, padding: 8, boxWidth: 10, font: t.legendFont } } },
+      },
+    });
+  }
+
+  function renderChartWeekly(data) {
+    destroyChart('weekly');
+    const ctx = document.getElementById('chartWeekly').getContext('2d');
+    const t = chartTheme();
+    _charts.weekly = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [{ label: 'Ziyarətçi', data: data.visits, backgroundColor: 'rgba(0,194,255,0.6)', borderColor: '#00C2FF', borderWidth: 1, borderRadius: 6 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: t.ticks, font: t.font }, grid: { display: false } },
+          y: { ticks: { color: t.ticks, precision: 0, font: t.font }, grid: { color: t.grid }, beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  function renderChartByService(byService) {
+    destroyChart('byService');
+    const ctx = document.getElementById('chartByService').getContext('2d');
+    const t = chartTheme();
+    const labels = Object.keys(byService);
+    const values = Object.values(byService);
+    _charts.byService = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Sifariş sayı', data: values, backgroundColor: 'rgba(0,87,255,0.6)', borderColor: '#0057FF', borderWidth: 1, borderRadius: 6 }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: t.ticks, precision: 0, font: t.font }, grid: { color: t.grid }, beginAtZero: true },
+          y: { ticks: { color: t.ticks, font: t.font }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
   // ===== ORDERS =====
+  let _ordersCache = [];
+  let deleteOrderTargetIdx = null;
+
   async function renderOrders() {
     const data = await apiGet('orders');
-    const orders = data.list || [];
-    document.getElementById('ordersTableBody').innerHTML = orders.length
-      ? orders.slice().reverse().map((o, idx) => `<tr>
+    _ordersCache = data.list || [];
+    document.getElementById('ordersTableBody').innerHTML = _ordersCache.length
+      ? _ordersCache.slice().reverse().map((o, idx) => `<tr>
           <td style="white-space:nowrap;color:var(--muted);font-size:0.8rem">${o.date || '-'}</td>
           <td><strong style="color:var(--white)">${o.name || '-'}</strong></td>
           <td>${o.phone || '-'}</td>
           <td><span class="cat-badge">${o.service || '-'}</span></td>
           <td style="color:var(--muted);font-size:0.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.notes || '-'}</td>
-          <td><button class="del-btn" onclick="deleteOrder(${orders.length - 1 - idx})">🗑️ Sil</button></td>
+          <td><button class="del-btn" onclick="openOrderDeleteModal(${_ordersCache.length - 1 - idx})">🗑️ Sil</button></td>
         </tr>`).join('')
       : '<tr><td colspan="6"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir sifariş yoxdur</p></div></td></tr>';
   }
-  async function deleteOrder(idx) {
-    const data = await apiGet('orders');
-    data.list = data.list || [];
-    data.list.splice(idx, 1);
-    await apiSave('orders', data);
-    await renderOrders();
-    showToast('🗑️ Sifariş silindi');
+
+  function openOrderDeleteModal(idx) {
+    const o = _ordersCache[idx];
+    if (!o) return;
+    deleteOrderTargetIdx = idx;
+    document.getElementById('deleteOrderName').textContent = o.name || '';
+    document.getElementById('orderDeleteModal').classList.add('open');
   }
-  async function clearAllOrders() {
-    if (!confirm('Bütün sifarişləri silmək istəyirsiniz?')) return;
-    await apiSave('orders', { list: [] });
-    await renderOrders();
-    showToast('🗑️ Bütün sifarişlər silindi');
+  function closeOrderDeleteModal() {
+    document.getElementById('orderDeleteModal').classList.remove('open');
+    deleteOrderTargetIdx = null;
+  }
+  async function confirmDeleteOrder() {
+    if (deleteOrderTargetIdx === null) return;
+    try {
+      const data = await apiGet('orders');
+      data.list = data.list || [];
+      data.list.splice(deleteOrderTargetIdx, 1);
+      await apiSave('orders', data);
+      closeOrderDeleteModal();
+      await renderOrders();
+      showToast('🗑️ Sifariş silindi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+
+  function clearAllOrders() {
+    if (!_ordersCache.length) { showToast('ℹ️ Silinəcək sifariş yoxdur'); return; }
+    document.getElementById('clearOrdersModal').classList.add('open');
+  }
+  function closeClearOrdersModal() {
+    document.getElementById('clearOrdersModal').classList.remove('open');
+  }
+  async function confirmClearOrders() {
+    try {
+      await apiSave('orders', { list: [] });
+      closeClearOrdersModal();
+      await renderOrders();
+      showToast('🗑️ Bütün sifarişlər silindi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
   }
 
   // ===== HERO =====
@@ -911,14 +1175,51 @@
     });
   }
   function addServiceCard() {
-    const cards = collectServiceCards();
-    cards.push({ icon: '🆕', title: 'Yeni xidmət', desc: 'Açıqlama...', linkText: 'Sifariş et →', link: '#order' });
-    renderServiceCards(cards);
+    ['newSrvIcon','newSrvTitle','newSrvDesc','newSrvLinkText','newSrvLink'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('newSrvLinkText').value = 'Sifariş et →';
+    document.getElementById('newSrvLink').value = '#order';
+    document.getElementById('newServiceModal').classList.add('open');
+    setTimeout(() => document.getElementById('newSrvTitle').focus(), 100);
   }
+  function closeNewServiceModal() {
+    document.getElementById('newServiceModal').classList.remove('open');
+  }
+  function confirmAddServiceCard() {
+    const icon = document.getElementById('newSrvIcon').value.trim() || '✨';
+    const title = document.getElementById('newSrvTitle').value.trim();
+    const desc = document.getElementById('newSrvDesc').value.trim();
+    const linkText = document.getElementById('newSrvLinkText').value.trim() || 'Sifariş et →';
+    const link = document.getElementById('newSrvLink').value.trim() || '#order';
+    if (!title || !desc) { showToast('❌ Başlıq və açıqlama mütləqdir', true); return; }
+    const cards = collectServiceCards();
+    cards.push({ icon, title, desc, linkText, link });
+    renderServiceCards(cards);
+    closeNewServiceModal();
+    showToast('✅ Kart əlavə edildi. Yadda saxla düyməsini unutma!');
+  }
+
+  let _srvDeleteIdx = null;
   function removeServiceCard(idx) {
     const cards = collectServiceCards();
-    cards.splice(idx, 1);
+    const card = cards[idx];
+    if (!card) return;
+    _srvDeleteIdx = idx;
+    document.getElementById('deleteSrvName').textContent = card.title || '(adsız)';
+    document.getElementById('srvDeleteModal').classList.add('open');
+  }
+  function closeSrvDeleteModal() {
+    document.getElementById('srvDeleteModal').classList.remove('open');
+    _srvDeleteIdx = null;
+  }
+  function confirmRemoveServiceCard() {
+    if (_srvDeleteIdx === null) return;
+    const cards = collectServiceCards();
+    cards.splice(_srvDeleteIdx, 1);
     renderServiceCards(cards);
+    closeSrvDeleteModal();
+    showToast('🗑️ Kart silindi. Yadda saxla düyməsini unutma!');
   }
   async function saveServices() {
     const s = {
@@ -966,10 +1267,18 @@
     items.push({ icon: '✨', title: 'Yeni üstünlük', desc: 'Açıqlama...' });
     renderWhyFeatures(items);
   }
-  function removeWhyFeature(idx) {
+  async function removeWhyFeature(idx) {
     const items = collectWhyFeatures();
+    const it = items[idx];
+    if (!it) return;
+    const ok = await confirmAction({
+      title: 'Üstünlüyü sil?',
+      message: `"${it.title || '(adsız)'}" üstünlüyünü silmək istədiyinizə əminsiniz?`,
+    });
+    if (!ok) return;
     items.splice(idx, 1);
     renderWhyFeatures(items);
+    showToast('🗑️ Üstünlük silindi. Yadda saxla düyməsini unutma!');
   }
   function renderWhyMetrics(items) {
     document.getElementById('whyMetricsContainer').innerHTML = items.map((m, i) => `
@@ -997,10 +1306,18 @@
     items.push({ num: '100', suffix: '+', label: 'Yeni metrika' });
     renderWhyMetrics(items);
   }
-  function removeWhyMetric(idx) {
+  async function removeWhyMetric(idx) {
     const items = collectWhyMetrics();
+    const it = items[idx];
+    if (!it) return;
+    const ok = await confirmAction({
+      title: 'Metrikanı sil?',
+      message: `"${it.label || '(adsız)'}" metrikasını silmək istədiyinizə əminsiniz?`,
+    });
+    if (!ok) return;
     items.splice(idx, 1);
     renderWhyMetrics(items);
+    showToast('🗑️ Metrika silindi. Yadda saxla düyməsini unutma!');
   }
   async function saveWhy() {
     const w = {
@@ -1162,6 +1479,26 @@
   // ===== HELPERS =====
   function escapeHtml(s) { return (s ?? '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   function escapeAttr(s) { return (s ?? '').toString().replace(/"/g, '&quot;'); }
+
+  // Generic confirm modal — promise-based
+  function confirmAction({ title = 'Silmək istəyirsiniz?', message = 'Bu əməliyyat geri alına bilməz.', icon = '🗑️', okText = 'Bəli, sil' } = {}) {
+    return new Promise(resolve => {
+      document.getElementById('confirmModalIcon').textContent = icon;
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMsg').textContent = message;
+      const ok = document.getElementById('confirmModalOk');
+      ok.textContent = okText;
+      const modal = document.getElementById('confirmModal');
+      const cleanup = () => { ok.onclick = null; modal.classList.remove('open'); };
+      ok.onclick = () => { cleanup(); resolve(true); };
+      modal._cancel = () => { cleanup(); resolve(false); };
+      modal.classList.add('open');
+    });
+  }
+  function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if (modal._cancel) modal._cancel(); else modal.classList.remove('open');
+  }
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;

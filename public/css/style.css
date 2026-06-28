@@ -47,7 +47,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 36px; height: 36px; background: linear-gradient(135deg, var(--blue), var(--cyan));
   border-radius: 8px; display: grid; place-items: center; font-size: 1.1rem;
 }
-.logo span { color: var(--cyan); }
+.logo span { color: #FFFFFF; }
 .nav-links { display: flex; align-items: center; gap: 2rem; }
 .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: color var(--transition); }
 .nav-links a:hover { color: var(--white); }

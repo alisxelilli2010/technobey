@@ -2,9 +2,15 @@
 
 namespace App\Support;
 
+use App\Models\Order;
+use App\Models\Product;
+
 class SiteContent
 {
     public const ADMIN_PASSWORD = 'totuTbrufuzor26';
+
+    /** Section adlarından hansılarının DB-də saxlandığı. */
+    private const DB_SECTIONS = ['products', 'orders'];
 
     public static function path(string $section): string
     {
@@ -13,6 +19,13 @@ class SiteContent
 
     public static function get(string $section): array
     {
+        if ($section === 'products') {
+            return self::getProductsSection();
+        }
+        if ($section === 'orders') {
+            return self::getOrdersSection();
+        }
+
         $path = self::path($section);
         if (is_file($path)) {
             $data = json_decode(file_get_contents($path), true);
@@ -25,6 +38,15 @@ class SiteContent
 
     public static function save(string $section, array $data): void
     {
+        if ($section === 'products') {
+            self::saveProductsSection($data);
+            return;
+        }
+        if ($section === 'orders') {
+            self::saveOrdersSection($data);
+            return;
+        }
+
         $dir = dirname(self::path($section));
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
@@ -34,14 +56,114 @@ class SiteContent
 
     public static function appendOrder(array $data): void
     {
-        $orders = self::get('orders');
-        if (!isset($orders['list']) || !is_array($orders['list'])) {
-            $orders = ['list' => []];
+        Order::create([
+            'name'    => $data['name'] ?? '',
+            'phone'   => $data['phone'] ?? '',
+            'email'   => $data['email'] ?? null,
+            'service' => $data['service'] ?? '',
+            'notes'   => $data['notes'] ?? null,
+        ]);
+    }
+
+    // -- products section uses DB but keeps meta (eyebrow/title/sub) in JSON ----
+    private static function productsMetaPath(): string
+    {
+        return storage_path('app/site/products_meta.json');
+    }
+
+    private static function getProductsSection(): array
+    {
+        $meta = self::defaults()['products'];
+        unset($meta['list']);
+        $path = self::productsMetaPath();
+        if (is_file($path)) {
+            $stored = json_decode(file_get_contents($path), true);
+            if (is_array($stored)) {
+                $meta = array_merge($meta, $stored);
+            }
         }
+        $meta['list'] = Product::orderBy('id')->get()->map(fn ($p) => [
+            'id'    => $p->id,
+            'name'  => $p->name,
+            'cat'   => $p->cat,
+            'price' => $p->price,
+            'unit'  => $p->unit,
+            'emoji' => $p->emoji,
+            'desc'  => $p->desc,
+        ])->all();
+        return $meta;
+    }
+
+    private static function saveProductsSection(array $data): void
+    {
+        // Meta hissəni JSON-da saxla
+        $meta = $data;
+        unset($meta['list']);
+        $dir = dirname(self::productsMetaPath());
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents(self::productsMetaPath(), json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        // Məhsulları DB-yə sync et: gələn list ilə cədvəli uyğunlaşdır
+        $list = $data['list'] ?? [];
+        $existingIds = Product::pluck('id')->all();
+        $incomingIds = [];
+        foreach ($list as $item) {
+            $attrs = [
+                'name'  => $item['name']  ?? '',
+                'cat'   => $item['cat']   ?? '',
+                'price' => (string)($item['price'] ?? ''),
+                'unit'  => $item['unit']  ?? 'ədəd',
+                'emoji' => $item['emoji'] ?? '📦',
+                'desc'  => $item['desc']  ?? null,
+            ];
+            if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {
+                Product::where('id', $item['id'])->update($attrs);
+                $incomingIds[] = $item['id'];
+            } else {
+                $newRow = Product::create($attrs);
+                $incomingIds[] = $newRow->id;
+            }
+        }
+        $toDelete = array_diff($existingIds, $incomingIds);
+        if (!empty($toDelete)) {
+            Product::whereIn('id', $toDelete)->delete();
+        }
+    }
+
+    // -- orders section reads from DB, save replaces full list -------------
+    private static function getOrdersSection(): array
+    {
         $tz = new \DateTimeZone('Asia/Baku');
-        $data['date'] = (new \DateTimeImmutable('now', $tz))->format('Y-m-d H:i');
-        $orders['list'][] = $data;
-        self::save('orders', $orders);
+        $list = Order::orderBy('id')->get()->map(function ($o) use ($tz) {
+            return [
+                'id'      => $o->id,
+                'date'    => $o->created_at ? $o->created_at->setTimezone($tz)->format('Y-m-d H:i') : '',
+                'name'    => $o->name,
+                'phone'   => $o->phone,
+                'email'   => $o->email,
+                'service' => $o->service,
+                'notes'   => $o->notes,
+            ];
+        })->all();
+        return ['list' => $list];
+    }
+
+    private static function saveOrdersSection(array $data): void
+    {
+        $list = $data['list'] ?? [];
+        $existingIds = Order::pluck('id')->all();
+        $incomingIds = [];
+        foreach ($list as $item) {
+            if (!empty($item['id'])) {
+                $incomingIds[] = (int)$item['id'];
+            }
+        }
+        $toDelete = array_diff($existingIds, $incomingIds);
+        if (!empty($toDelete)) {
+            Order::whereIn('id', $toDelete)->delete();
+        }
     }
 
     public static function defaults(): array
