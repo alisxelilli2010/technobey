@@ -63,7 +63,11 @@
     <div class="hero-visual">
       @foreach (($hero['devices'] ?? []) as $idx => $dev)
       <div class="device-card{{ $idx === 0 ? ' featured' : '' }}">
-        <div class="device-icon">{{ $dev['emoji'] ?? '' }}</div>
+        @if (!empty($dev['image']))
+          <div class="device-img"><img src="{{ $dev['image'] }}" alt="{{ $dev['title'] ?? '' }}" loading="lazy"></div>
+        @else
+          <div class="device-icon">{{ $dev['emoji'] ?? '' }}</div>
+        @endif
         @if ($idx === 0)
         <div>
           <div class="device-tag">Ən çox satılan</div>
@@ -91,7 +95,11 @@
     <div class="services-grid">
       @foreach (($services['cards'] ?? []) as $card)
       <div class="service-card">
-        <div class="service-ico">{{ $card['icon'] ?? '' }}</div>
+        @if (!empty($card['image']))
+          <div class="service-img"><img src="{{ $card['image'] }}" alt="{{ $card['title'] ?? '' }}" loading="lazy"></div>
+        @else
+          <div class="service-ico">{{ $card['icon'] ?? '' }}</div>
+        @endif
         <h3>{{ $card['title'] ?? '' }}</h3>
         <p>{{ $card['desc'] ?? '' }}</p>
         <a href="{{ $card['link'] ?? '#' }}" class="service-link">{{ $card['linkText'] ?? '' }}</a>
@@ -122,7 +130,11 @@
     <div class="products-grid" id="productsGrid">
       @foreach (($products['list'] ?? []) as $p)
       <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}">
-        <div class="product-img">{{ $p['emoji'] ?? '📦' }}</div>
+        @if (!empty($p['image']))
+          <div class="product-img product-img-photo"><img src="{{ $p['image'] }}" alt="{{ $p['name'] ?? '' }}" loading="lazy"></div>
+        @else
+          <div class="product-img">{{ $p['emoji'] ?? '📦' }}</div>
+        @endif
         <div class="product-body">
           <div class="product-cat">{{ $catNames[$p['cat'] ?? ''] ?? ucfirst($p['cat'] ?? '') }}</div>
           <h3>{{ $p['name'] ?? '' }}</h3>

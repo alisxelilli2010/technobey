@@ -129,6 +129,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .device-card:hover { transform: translateY(-4px); border-color: rgba(0,87,255,0.5); box-shadow: 0 12px 40px rgba(0,87,255,0.2); }
 .device-card.featured { grid-column: span 2; flex-direction: row; text-align: left; gap: 20px; }
 .device-icon { font-size: 2.2rem; }
+.device-img {
+  width: 88px; height: 88px; border-radius: 14px; overflow: hidden;
+  background: #0b1220; border: 1px solid var(--border); flex-shrink: 0;
+}
+.device-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.device-card.featured .device-img { width: 110px; height: 110px; }
 .device-card h3 { font-size: 0.9rem; font-weight: 700; color: var(--white); }
 .device-card p { font-size: 0.78rem; color: var(--muted); }
 .device-tag { background: rgba(0,194,255,0.15); color: var(--cyan); font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 100px; }
@@ -158,6 +164,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .service-card:hover { border-color: rgba(0,87,255,0.4); box-shadow: 0 8px 40px rgba(0,87,255,0.15); transform: translateY(-3px); }
 .service-card:hover::before { transform: scaleX(1); }
 .service-ico { font-size: 2.4rem; margin-bottom: 18px; }
+.service-img {
+  width: 100%; height: 160px; border-radius: 12px; overflow: hidden;
+  margin-bottom: 18px; background: #0b1220; border: 1px solid var(--border);
+}
+.service-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .service-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--white); margin-bottom: 10px; }
 .service-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
 .service-link { font-size: 0.85rem; font-weight: 600; color: var(--blue); display: inline-flex; align-items: center; gap: 6px; transition: gap var(--transition); }
@@ -185,6 +196,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   height: 180px; background: linear-gradient(135deg, #111827, #1a2540);
   display: grid; place-items: center; font-size: 4rem;
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.product-img.product-img-photo { padding: 0; background: #0b1220; }
+.product-img.product-img-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .product-body { padding: 20px; }
 .product-cat { font-size: 0.72rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }

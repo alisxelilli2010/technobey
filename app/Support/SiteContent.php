@@ -89,6 +89,7 @@ class SiteContent
             'price' => $p->price,
             'unit'  => $p->unit,
             'emoji' => $p->emoji,
+            'image' => $p->image,
             'desc'  => $p->desc,
         ])->all();
         return $meta;
@@ -116,6 +117,7 @@ class SiteContent
                 'price' => (string)($item['price'] ?? ''),
                 'unit'  => $item['unit']  ?? 'ədəd',
                 'emoji' => $item['emoji'] ?? '📦',
+                'image' => $item['image'] ?? null,
                 'desc'  => $item['desc']  ?? null,
             ];
             if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {

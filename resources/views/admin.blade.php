@@ -241,6 +241,30 @@
   }
   .info-note strong { color: var(--white); }
 
+  /* IMAGE UPLOADER */
+  .img-uploader {
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    background: rgba(255,255,255,0.02); border: 1.5px dashed var(--border);
+    border-radius: 10px; padding: 14px;
+  }
+  .img-preview {
+    width: 120px; height: 120px; border-radius: 10px; overflow: hidden;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .img-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .img-preview-empty { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 8px; font-weight: 600; }
+  .img-preview-clickable { cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .img-preview-clickable:hover { border-color: var(--blue); background: rgba(0,87,255,0.08); }
+  .img-preview-clickable:hover .img-preview-empty { color: var(--cyan); }
+  .img-uploader-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .img-preview-sm {
+    width: 44px; height: 44px; border-radius: 8px; overflow: hidden;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;
+  }
+  .img-preview-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
   /* MODAL (delete confirm) */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -254,6 +278,17 @@
     max-height: 90vh; overflow-y: auto;
   }
   .modal h3 { font-size: 1.2rem; font-weight: 800; color: var(--white); margin-bottom: 24px; }
+  .modal { position: relative; }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--muted); font-size: 1.15rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .modal-close:hover { color: #f87171; border-color: #f87171; background: rgba(220,38,38,0.1); }
 
   /* TOAST */
   .toast {
@@ -463,17 +498,31 @@
       </div>
       <div class="panel">
         <h3>Sağdakı Cihaz Kartları <small>(3 ədəd)</small></h3>
-        <div class="form-row three">
-          <div class="form-grp"><label>Kart 1 emoji</label><input type="text" id="heroDev1Emoji" placeholder="🖥️" maxlength="4"></div>
-          <div class="form-grp"><label>Kart 2 emoji</label><input type="text" id="heroDev2Emoji" placeholder="🖨️" maxlength="4"></div>
-          <div class="form-grp"><label>Kart 3 emoji</label><input type="text" id="heroDev3Emoji" placeholder="📽️" maxlength="4"></div>
-          <div class="form-grp"><label>Kart 1 başlıq</label><input type="text" id="heroDev1Title" placeholder="Gaming & Office PC"></div>
-          <div class="form-grp"><label>Kart 2 başlıq</label><input type="text" id="heroDev2Title" placeholder="Printerlər"></div>
-          <div class="form-grp"><label>Kart 3 başlıq</label><input type="text" id="heroDev3Title" placeholder="Proyektorlar"></div>
-          <div class="form-grp"><label>Kart 1 açıqlama</label><input type="text" id="heroDev1Desc" placeholder="Intel Core..."></div>
-          <div class="form-grp"><label>Kart 2 açıqlama</label><input type="text" id="heroDev2Desc" placeholder="HP, Canon, Epson..."></div>
-          <div class="form-grp"><label>Kart 3 açıqlama</label><input type="text" id="heroDev3Desc" placeholder="4K, Full HD..."></div>
+        @foreach ([1, 2, 3] as $i)
+        <div class="item-row">
+          <div class="item-row-header">
+            <span class="item-row-title">Kart #{{ $i }}</span>
+          </div>
+          <div class="form-row">
+            <div class="form-grp"><label>Emoji (şəkil olmadıqda)</label><input type="text" id="heroDev{{ $i }}Emoji" maxlength="4"></div>
+            <div class="form-grp"><label>Başlıq</label><input type="text" id="heroDev{{ $i }}Title"></div>
+            <div class="form-grp full">
+              <label>Kart şəkli (şəkil hissəsinə klikləyin)</label>
+              <div class="img-uploader">
+                <input type="hidden" id="heroDev{{ $i }}Image">
+                <input type="file" id="heroDev{{ $i }}File" accept="image/*" style="display:none" onchange="uploadHeroDeviceImage(this, {{ $i }})">
+                <div class="img-preview img-preview-clickable" id="heroDev{{ $i }}Preview" onclick="document.getElementById('heroDev{{ $i }}File').click()" title="Şəkil seçmək üçün klikləyin">
+                  <span class="img-preview-empty">➕ Şəkil əlavə et</span>
+                </div>
+                <div class="img-uploader-actions">
+                  <button type="button" class="cancel-btn" onclick="clearHeroDeviceImage({{ $i }})">🗑️ Sil</button>
+                </div>
+              </div>
+            </div>
+            <div class="form-grp full"><label>Açıqlama</label><input type="text" id="heroDev{{ $i }}Desc"></div>
+          </div>
         </div>
+        @endforeach
       </div>
     </div>
 
@@ -620,7 +669,7 @@
         </div>
         <table>
           <thead><tr>
-            <th>Emoji</th><th>Məhsul adı</th><th>Kateqoriya</th><th>Qiymət</th><th>Açıqlama</th><th>Əməliyyat</th>
+            <th>Şəkil</th><th>Məhsul adı</th><th>Kateqoriya</th><th>Qiymət</th><th>Açıqlama</th><th>Əməliyyat</th>
           </tr></thead>
           <tbody id="productTableBody"></tbody>
         </table>
@@ -658,8 +707,21 @@
             <input type="number" id="fPrice" placeholder="məs. 450">
           </div>
           <div class="form-grp">
-            <label>Emoji ikonu</label>
+            <label>Emoji ikonu (şəkil olmadıqda göstərilir)</label>
             <input type="text" id="fEmoji" placeholder="məs. 🖨️" maxlength="4">
+          </div>
+          <div class="form-grp full">
+            <label>Məhsul şəkli (şəkil hissəsinə klikləyin)</label>
+            <div class="img-uploader" id="fImageBox">
+              <input type="hidden" id="fImage">
+              <input type="file" id="fImageFile" accept="image/*" style="display:none" onchange="uploadProductImage(this)">
+              <div class="img-preview img-preview-clickable" id="fImagePreview" onclick="document.getElementById('fImageFile').click()" title="Şəkil seçmək üçün klikləyin">
+                <span class="img-preview-empty">➕ Şəkil əlavə et</span>
+              </div>
+              <div class="img-uploader-actions">
+                <button type="button" class="cancel-btn" onclick="clearProductImage()">🗑️ Sil</button>
+              </div>
+            </div>
           </div>
           <div class="form-grp full">
             <label>Qısa açıqlama *</label>
@@ -682,6 +744,68 @@
     </div>
 
   </main>
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="editProductModal">
+  <div class="modal" style="max-width:680px">
+    <button type="button" class="modal-close" onclick="closeEditProductModal()" title="Bağla">✕</button>
+    <h3>✏️ Məhsulu Redaktə Et</h3>
+    <input type="hidden" id="eId">
+    <div class="form-row">
+      <div class="form-grp">
+        <label>Məhsul adı *</label>
+        <input type="text" id="eName" placeholder="məs. HP LaserJet Pro">
+      </div>
+      <div class="form-grp">
+        <label>Kateqoriya *</label>
+        <select id="eCat">
+          <option value="">Seçin...</option>
+          <option value="komputer">💻 Kompüter / Laptop</option>
+          <option value="printer">🖨️ Printer</option>
+          <option value="proyektor">📽️ Proyektor</option>
+          <option value="aksesuar">🖱️ Aksesuar</option>
+        </select>
+      </div>
+      <div class="form-grp">
+        <label>Qiymət (₼) *</label>
+        <input type="number" id="ePrice" placeholder="məs. 450">
+      </div>
+      <div class="form-grp">
+        <label>Emoji ikonu (şəkil olmadıqda)</label>
+        <input type="text" id="eEmoji" placeholder="məs. 🖨️" maxlength="4">
+      </div>
+      <div class="form-grp full">
+        <label>Məhsul şəkli (şəkil hissəsinə klikləyin)</label>
+        <div class="img-uploader">
+          <input type="hidden" id="eImage">
+          <input type="file" id="eImageFile" accept="image/*" style="display:none" onchange="uploadEditImage(this)">
+          <div class="img-preview img-preview-clickable" id="eImagePreview" onclick="document.getElementById('eImageFile').click()" title="Şəkil seçmək üçün klikləyin">
+            <span class="img-preview-empty">➕ Şəkil əlavə et</span>
+          </div>
+          <div class="img-uploader-actions">
+            <button type="button" class="cancel-btn" onclick="clearEditImage()">🗑️ Sil</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-grp full">
+        <label>Qısa açıqlama *</label>
+        <textarea id="eDesc" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
+      </div>
+      <div class="form-grp">
+        <label>Qiymət vahidi</label>
+        <select id="eUnit">
+          <option value="ədəd">/ ədəd</option>
+          <option value="dəst">/ dəst</option>
+          <option value="ay">/ ay</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="save-btn" onclick="saveEditProduct()">💾 Yadda Saxla</button>
+      <button class="cancel-btn" onclick="closeEditProductModal()">Ləğv et</button>
+    </div>
+  </div>
 </div>
 
 <!-- DELETE CONFIRM MODAL -->
@@ -782,6 +906,23 @@
     const hash = (location.hash || '').replace('#', '');
     const initial = hash && hash !== 'login' && document.getElementById('page' + hash.charAt(0).toUpperCase() + hash.slice(1)) ? hash : 'dashboard';
     showPage(initial);
+    startDashboardAutoRefresh();
+  }
+
+  // ===== DASHBOARD AUTO REFRESH =====
+  let _dashRefreshTimer = null;
+  function startDashboardAutoRefresh() {
+    if (_dashRefreshTimer) return;
+    _dashRefreshTimer = setInterval(() => {
+      if (document.hidden) return;
+      const pg = document.getElementById('pageDashboard');
+      if (pg && pg.classList.contains('active')) {
+        renderDashboard().catch(() => {});
+      }
+    }, 20000);
+  }
+  function stopDashboardAutoRefresh() {
+    if (_dashRefreshTimer) { clearInterval(_dashRefreshTimer); _dashRefreshTimer = null; }
   }
   function showLoginHash() {
     try { history.replaceState(null, '', '#login'); } catch {}
@@ -791,14 +932,17 @@
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
     if (u === ADMIN_USER && p === ADMIN_PASS) {
-      try { localStorage.setItem(AUTH_KEY, '1'); } catch {}
+      try { sessionStorage.setItem(AUTH_KEY, '1'); } catch {}
+      try { localStorage.removeItem(AUTH_KEY); } catch {}
       enterAdmin();
     } else {
       document.getElementById('loginErr').style.display = 'block';
     }
   }
   function doLogout() {
+    try { sessionStorage.removeItem(AUTH_KEY); } catch {}
     try { localStorage.removeItem(AUTH_KEY); } catch {}
+    stopDashboardAutoRefresh();
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('loginUser').value = '';
@@ -806,9 +950,9 @@
     showLoginHash();
   }
 
-  // Auto-login if already logged in earlier; otherwise show #login in URL
+  // Yalnız cari tab sessiyasında login qalır — tab bağlanan kimi çıxış edir
   try {
-    if (localStorage.getItem(AUTH_KEY) === '1') {
+    if (sessionStorage.getItem(AUTH_KEY) === '1') {
       document.addEventListener('DOMContentLoaded', enterAdmin);
     } else {
       document.addEventListener('DOMContentLoaded', showLoginHash);
@@ -833,6 +977,22 @@
     });
     if (!res.ok) throw new Error('Save failed: ' + res.status);
     return await res.json();
+  }
+  async function apiUpload(file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'X-Admin-Password': ADMIN_PASS },
+      body: fd,
+    });
+    if (!res.ok) {
+      let msg = 'Upload failed: ' + res.status;
+      try { const j = await res.json(); if (j.message) msg = j.message; } catch {}
+      throw new Error(msg);
+    }
+    const j = await res.json();
+    return j.url;
   }
 
   // ===== IN-MEMORY CACHE =====
@@ -888,6 +1048,7 @@
         });
         const unitEl = document.getElementById('fUnit');
         if (unitEl) unitEl.value = 'ədəd';
+        setProductImage('');
       }
       if (name === 'orders') await renderOrders();
       if (name === 'hero') await loadHero();
@@ -925,7 +1086,7 @@
     const recent = products.slice(-5).reverse();
     document.getElementById('recentTableBody').innerHTML = recent.length
       ? recent.map(p => `<tr>
-          <td>${p.emoji || '📦'} ${p.name}</td>
+          <td>${p.image ? `<span class="img-preview-sm" style="margin-right:8px"><img src="${escapeAttr(p.image)}" alt=""></span>` : (p.emoji || '📦') + ' '}${escapeHtml(p.name)}</td>
           <td><span class="cat-badge">${p.cat}</span></td>
           <td class="price-cell">${p.price} ₼</td>
           <td><div class="action-btns">
@@ -1123,6 +1284,7 @@
       const e = document.getElementById(`heroDev${i+1}Emoji`); if (e) e.value = d.emoji || '';
       const t = document.getElementById(`heroDev${i+1}Title`); if (t) t.value = d.title || '';
       const ds = document.getElementById(`heroDev${i+1}Desc`); if (ds) ds.value = d.desc || '';
+      setHeroDeviceImage(i + 1, d.image || '');
     });
   }
   async function saveHero() {
@@ -1135,11 +1297,40 @@
       btn2Text: document.getElementById('heroBtn2Text').value,
       btn2Link: document.getElementById('heroBtn2Link').value,
       stats: [1,2,3].map(i => ({ num: document.getElementById(`heroStat${i}Num`).value, label: document.getElementById(`heroStat${i}Lbl`).value })),
-      devices: [1,2,3].map(i => ({ emoji: document.getElementById(`heroDev${i}Emoji`).value, title: document.getElementById(`heroDev${i}Title`).value, desc: document.getElementById(`heroDev${i}Desc`).value })),
+      devices: [1,2,3].map(i => ({
+        emoji: document.getElementById(`heroDev${i}Emoji`).value,
+        title: document.getElementById(`heroDev${i}Title`).value,
+        desc:  document.getElementById(`heroDev${i}Desc`).value,
+        image: document.getElementById(`heroDev${i}Image`).value || null,
+      })),
     };
     try { await apiSave('hero', h); showToast('✅ Hero bölməsi yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
+  function setHeroDeviceImage(i, url) {
+    const hid = document.getElementById(`heroDev${i}Image`);
+    if (hid) hid.value = url || '';
+    const box = document.getElementById(`heroDev${i}Preview`);
+    if (!box) return;
+    box.innerHTML = url
+      ? `<img src="${escapeAttr(url)}" alt="">`
+      : '<span class="img-preview-empty">➕ Şəkil əlavə et</span>';
+  }
+  async function uploadHeroDeviceImage(input, i) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      setHeroDeviceImage(i, url);
+      showToast('✅ Şəkil yükləndi. Yadda saxlamağı unutma!');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearHeroDeviceImage(i) { setHeroDeviceImage(i, ''); }
 
   // ===== SERVICES =====
   async function loadServices() {
@@ -1159,8 +1350,21 @@
             <button class="item-row-del" onclick="removeServiceCard(${i})">🗑️ Sil</button>
           </div>
           <div class="form-row">
-            <div class="form-grp"><label>İkon emoji</label><input type="text" value="${escapeAttr(card.icon)}" data-fld="icon" maxlength="4"></div>
+            <div class="form-grp"><label>İkon emoji (şəkil olmadıqda)</label><input type="text" value="${escapeAttr(card.icon)}" data-fld="icon" maxlength="4"></div>
             <div class="form-grp"><label>Başlıq</label><input type="text" value="${escapeAttr(card.title)}" data-fld="title"></div>
+            <div class="form-grp full">
+              <label>Xidmət şəkli (şəkil hissəsinə klikləyin)</label>
+              <div class="img-uploader">
+                <input type="hidden" data-fld="image" value="${escapeAttr(card.image || '')}">
+                <input type="file" data-srv-file accept="image/*" style="display:none" onchange="uploadServiceImage(this, ${i})">
+                <div class="img-preview img-preview-clickable" data-srv-preview onclick="_srvRow(${i}).querySelector('[data-srv-file]').click()" title="Şəkil seçmək üçün klikləyin">
+                  ${card.image ? `<img src="${escapeAttr(card.image)}" alt="">` : '<span class="img-preview-empty">➕ Şəkil əlavə et</span>'}
+                </div>
+                <div class="img-uploader-actions">
+                  <button type="button" class="cancel-btn" onclick="clearServiceImage(${i})">🗑️ Sil</button>
+                </div>
+              </div>
+            </div>
             <div class="form-grp full"><label>Açıqlama</label><textarea data-fld="desc">${escapeHtml(card.desc)}</textarea></div>
             <div class="form-grp"><label>Düymə mətni</label><input type="text" value="${escapeAttr(card.linkText)}" data-fld="linkText"></div>
             <div class="form-grp"><label>Düymə linki</label><input type="text" value="${escapeAttr(card.link)}" data-fld="link"></div>
@@ -1171,9 +1375,34 @@
   function collectServiceCards() {
     return Array.from(document.querySelectorAll('[data-srv-idx]')).map(row => {
       const get = fld => row.querySelector(`[data-fld="${fld}"]`).value;
-      return { icon: get('icon'), title: get('title'), desc: get('desc'), linkText: get('linkText'), link: get('link') };
+      return { icon: get('icon'), title: get('title'), image: get('image') || null, desc: get('desc'), linkText: get('linkText'), link: get('link') };
     });
   }
+  function _srvRow(idx) { return document.querySelector(`[data-srv-idx="${idx}"]`); }
+  function setServiceImage(idx, url) {
+    const row = _srvRow(idx);
+    if (!row) return;
+    row.querySelector('[data-fld="image"]').value = url || '';
+    const box = row.querySelector('[data-srv-preview]');
+    box.innerHTML = url
+      ? `<img src="${escapeAttr(url)}" alt="">`
+      : '<span class="img-preview-empty">➕ Şəkil əlavə et</span>';
+  }
+  async function uploadServiceImage(input, idx) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      setServiceImage(idx, url);
+      showToast('✅ Şəkil yükləndi. Yadda saxlamağı unutma!');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearServiceImage(idx) { setServiceImage(idx, ''); }
   function addServiceCard() {
     ['newSrvIcon','newSrvTitle','newSrvDesc','newSrvLinkText','newSrvLink'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
@@ -1194,7 +1423,7 @@
     const link = document.getElementById('newSrvLink').value.trim() || '#order';
     if (!title || !desc) { showToast('❌ Başlıq və açıqlama mütləqdir', true); return; }
     const cards = collectServiceCards();
-    cards.push({ icon, title, desc, linkText, link });
+    cards.push({ icon, title, image: null, desc, linkText, link });
     renderServiceCards(cards);
     closeNewServiceModal();
     showToast('✅ Kart əlavə edildi. Yadda saxla düyməsini unutma!');
@@ -1379,7 +1608,7 @@
     document.getElementById('productCountLabel').textContent = `Cəmi ${products.length} məhsul`;
     document.getElementById('productTableBody').innerHTML = products.length
       ? products.map(p => `<tr>
-          <td style="font-size:1.5rem">${p.emoji || '📦'}</td>
+          <td>${p.image ? `<span class="img-preview-sm"><img src="${escapeAttr(p.image)}" alt=""></span>` : `<span style="font-size:1.5rem">${p.emoji || '📦'}</span>`}</td>
           <td><strong style="color:var(--white)">${p.name}</strong></td>
           <td><span class="cat-badge">${catLabels[p.cat] || p.cat}</span></td>
           <td class="price-cell">${p.price} ₼<span style="font-size:0.75rem;color:var(--muted);font-weight:400"> /${p.unit}</span></td>
@@ -1398,6 +1627,7 @@
     const cat  = document.getElementById('fCat').value;
     const price= document.getElementById('fPrice').value.trim();
     const emoji= document.getElementById('fEmoji').value.trim() || '📦';
+    const image= document.getElementById('fImage').value.trim() || null;
     const desc = document.getElementById('fDesc').value.trim();
     const unit = document.getElementById('fUnit').value;
     const editId = document.getElementById('editId').value;
@@ -1408,12 +1638,12 @@
       const products = (await getProducts()).slice();
       if (editId) {
         const idx = products.findIndex(p => p.id == editId);
-        if (idx > -1) { products[idx] = { ...products[idx], name, cat, price, emoji, desc, unit }; }
+        if (idx > -1) { products[idx] = { ...products[idx], name, cat, price, emoji, image, desc, unit }; }
         await saveProducts(products);
         showToast('✅ Məhsul yeniləndi!');
       } else {
         const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-        products.push({ id: newId, name, cat, price, emoji, desc, unit });
+        products.push({ id: newId, name, cat, price, emoji, image, desc, unit });
         await saveProducts(products);
         showToast('✅ Məhsul əlavə edildi!');
       }
@@ -1425,19 +1655,66 @@
   }
   async function editProduct(id) {
     const products = await getProducts();
-    const p = products.find(x => x.id === id);
+    const p = products.find(x => String(x.id) === String(id));
     if (!p) return;
-    // showPage('add', ...) ilkin olaraq editId-i təmizləyir, ona görə əvvəl səhifəni keç,
-    // SONRA fieldləri doldur.
-    await showPage('add', document.querySelector('[data-page=add]'));
-    document.getElementById('editId').value = p.id;
-    document.getElementById('fName').value = p.name;
-    document.getElementById('fCat').value = p.cat;
-    document.getElementById('fPrice').value = p.price;
-    document.getElementById('fEmoji').value = p.emoji || '';
-    document.getElementById('fDesc').value = p.desc;
-    document.getElementById('fUnit').value = p.unit || 'ədəd';
-    document.getElementById('formTitle').textContent = '✏️ Məhsulu Redaktə Et';
+    document.getElementById('eId').value = p.id;
+    document.getElementById('eName').value = p.name || '';
+    document.getElementById('eCat').value = p.cat || '';
+    document.getElementById('ePrice').value = p.price || '';
+    document.getElementById('eEmoji').value = p.emoji || '';
+    document.getElementById('eDesc').value = p.desc || '';
+    document.getElementById('eUnit').value = p.unit || 'ədəd';
+    setEditImage(p.image || '');
+    document.getElementById('editProductModal').classList.add('open');
+  }
+  function closeEditProductModal() {
+    document.getElementById('editProductModal').classList.remove('open');
+  }
+  function setEditImage(url) {
+    document.getElementById('eImage').value = url || '';
+    const box = document.getElementById('eImagePreview');
+    box.innerHTML = url
+      ? `<img src="${escapeAttr(url)}" alt="">`
+      : '<span class="img-preview-empty">➕ Şəkil əlavə et</span>';
+  }
+  async function uploadEditImage(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      setEditImage(url);
+      showToast('✅ Şəkil yükləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearEditImage() { setEditImage(''); }
+  async function saveEditProduct() {
+    const id    = document.getElementById('eId').value;
+    const name  = document.getElementById('eName').value.trim();
+    const cat   = document.getElementById('eCat').value;
+    const price = document.getElementById('ePrice').value.trim();
+    const emoji = document.getElementById('eEmoji').value.trim() || '📦';
+    const image = document.getElementById('eImage').value.trim() || null;
+    const desc  = document.getElementById('eDesc').value.trim();
+    const unit  = document.getElementById('eUnit').value;
+    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun!', true); return; }
+    try {
+      const products = (await getProducts()).slice();
+      const idx = products.findIndex(p => String(p.id) === String(id));
+      if (idx > -1) {
+        products[idx] = { ...products[idx], name, cat, price, emoji, image, desc, unit };
+        await saveProducts(products);
+        showToast('✅ Məhsul yeniləndi!');
+      }
+      closeEditProductModal();
+      await renderProductTable();
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
   }
   function clearForm() {
     ['fName','fCat','fPrice','fEmoji','fDesc','fUnit'].forEach(id => {
@@ -1445,7 +1722,32 @@
       if (el) el.value = '';
     });
     document.getElementById('editId').value = '';
+    setProductImage('');
     document.getElementById('formTitle').textContent = 'Yeni Məhsul Əlavə Et';
+  }
+  function setProductImage(url) {
+    document.getElementById('fImage').value = url || '';
+    const box = document.getElementById('fImagePreview');
+    box.innerHTML = url
+      ? `<img src="${escapeAttr(url)}" alt="">`
+      : '<span class="img-preview-empty">➕ Şəkil əlavə et</span>';
+  }
+  async function uploadProductImage(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      setProductImage(url);
+      showToast('✅ Şəkil yükləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearProductImage() {
+    setProductImage('');
   }
 
   // ===== DELETE =====

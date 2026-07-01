@@ -176,3 +176,23 @@ Route::post('/api/site/{section}', function (Request $request, string $section) 
     SiteContent::save($section, $payload);
     return response()->json(['ok' => true]);
 });
+
+// ===== IMAGE UPLOAD =====
+Route::post('/api/upload', function (Request $request) {
+    if ($request->header('X-Admin-Password') !== SiteContent::ADMIN_PASSWORD) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    $request->validate([
+        'file' => 'required|file|image|mimes:jpg,jpeg,png,webp,gif|max:4096',
+    ]);
+    $file = $request->file('file');
+    $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+    $dir = 'uploads/' . date('Y/m');
+    $absDir = public_path($dir);
+    if (!is_dir($absDir)) {
+        mkdir($absDir, 0755, true);
+    }
+    $name = bin2hex(random_bytes(8)) . '.' . $ext;
+    $file->move($absDir, $name);
+    return response()->json(['url' => '/' . $dir . '/' . $name]);
+});
