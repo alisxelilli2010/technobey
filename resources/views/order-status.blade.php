@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ __('site.track.title') }} — Texnobəy</title>
+<meta name="description" content="Sifariş kodunuzla sifariş statusunu Texnobəy-də onlayn izləyin.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0057ff">
+<link rel="canonical" href="{{ url()->current() }}">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">

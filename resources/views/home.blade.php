@@ -1,16 +1,126 @@
+@php
+    $siteUrl        = rtrim(url('/'), '/');
+    $canonical      = url()->current();
+    $ogImage        = asset('og-image.svg');
+    $metaTitle      = __('site.meta.title');
+    $metaDesc       = __('site.meta.description');
+    $metaKeywords   = __('site.meta.keywords');
+
+    $orgPhone   = $contact['phone']   ?? '+994 55 789 57 45';
+    $orgEmail   = $contact['email']   ?? 'info@texnobey.az';
+    $orgAddress = $contact['addr']    ?? 'Nəsimi rayonu, Bakı şəhəri, Azərbaycan';
+    $orgHours   = $contact['hours']   ?? '';
+
+    $organization = [
+        '@context' => 'https://schema.org',
+        '@type'    => 'Store',
+        '@id'      => $siteUrl . '/#store',
+        'name'     => 'Texnobəy',
+        'url'      => $siteUrl,
+        'logo'     => asset('favicon.svg'),
+        'image'    => $ogImage,
+        'description' => $metaDesc,
+        'telephone'   => $orgPhone,
+        'email'       => $orgEmail,
+        'priceRange'  => '₼₼',
+        'address'  => [
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => 'Nəsimi rayonu',
+            'addressLocality' => 'Bakı',
+            'addressCountry'  => 'AZ',
+        ],
+        'sameAs' => [
+            'https://www.instagram.com/texnobey.az/',
+            'https://www.facebook.com/p/TexnoBeyaz-61568468586277/',
+        ],
+    ];
+
+    $website = [
+        '@context' => 'https://schema.org',
+        '@type'    => 'WebSite',
+        '@id'      => $siteUrl . '/#website',
+        'url'      => $siteUrl,
+        'name'     => 'Texnobəy',
+        'inLanguage' => 'az-AZ',
+        'publisher' => ['@id' => $siteUrl . '/#store'],
+    ];
+
+    $productItems = [];
+    foreach (($products['list'] ?? []) as $p) {
+        $productItems[] = [
+            '@type'       => 'Product',
+            'name'        => $p['name'] ?? '',
+            'description' => $p['desc'] ?? '',
+            'image'       => !empty($p['image']) ? url($p['image']) : $ogImage,
+            'offers'      => [
+                '@type'         => 'Offer',
+                'price'         => preg_replace('/[^0-9.]/', '', (string)($p['price'] ?? '')),
+                'priceCurrency' => 'AZN',
+                'availability'  => (int)($p['stock'] ?? 0) > 0
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+                'url'           => $siteUrl . '/#products',
+            ],
+        ];
+    }
+    $itemList = [
+        '@context'         => 'https://schema.org',
+        '@type'            => 'ItemList',
+        'itemListElement'  => array_map(function ($i, $prod) {
+            return ['@type' => 'ListItem', 'position' => $i + 1, 'item' => $prod];
+        }, array_keys($productItems), $productItems),
+    ];
+@endphp
 <!DOCTYPE html>
 <html lang="az">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="description" content="{{ __('site.meta.description') }}">
-<meta name="keywords" content="{{ __('site.meta.keywords') }}">
-<title>{{ __('site.meta.title') }}</title>
+
+<title>{{ $metaTitle }}</title>
+<meta name="description" content="{{ $metaDesc }}">
+<meta name="keywords" content="{{ $metaKeywords }}">
+<meta name="author" content="Texnobəy">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0057ff">
+<link rel="canonical" href="{{ $canonical }}">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Texnobəy">
+<meta property="og:locale" content="az_AZ">
+<meta property="og:url" content="{{ $canonical }}">
+<meta property="og:title" content="{{ $metaTitle }}">
+<meta property="og:description" content="{{ $metaDesc }}">
+<meta property="og:image" content="{{ $ogImage }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Texnobəy – Bakıda №1 Texnologiya Mağazası">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $metaTitle }}">
+<meta name="twitter:description" content="{{ $metaDesc }}">
+<meta name="twitter:image" content="{{ $ogImage }}">
+
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+<link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
+<link rel="manifest" href="{{ asset('site.webmanifest') }}">
+
 <script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
+
+<!-- Structured data (Schema.org / JSON-LD) -->
+<script type="application/ld+json">{!! json_encode($organization, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
+<script type="application/ld+json">{!! json_encode($website, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
+@if (!empty($productItems))
+<script type="application/ld+json">{!! json_encode($itemList, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}</script>
+@endif
 </head>
 <body>
 

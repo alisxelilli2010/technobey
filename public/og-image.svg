@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080D1A"/>
+      <stop offset="1" stop-color="#0A1128"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0057ff"/>
+      <stop offset="1" stop-color="#00c2ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="80" y="80" width="120" height="120" rx="26" fill="url(#accent)"/>
+  <text x="140" y="164" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-weight="800" font-size="58" fill="#ffffff">Tb</text>
+  <text x="80" y="330" font-family="Inter, Segoe UI, sans-serif" font-weight="800" font-size="88" fill="#ffffff">Texno<tspan fill="#00c2ff">bəy</tspan></text>
+  <text x="80" y="400" font-family="Inter, Segoe UI, sans-serif" font-weight="500" font-size="34" fill="#b8c1d9">Bakıda №1 Texnologiya Mağazası</text>
+  <text x="80" y="470" font-family="Inter, Segoe UI, sans-serif" font-weight="400" font-size="26" fill="#8a94b0">Kompüter · Printer · Proyektor · Servis</text>
+  <text x="80" y="560" font-family="Inter, Segoe UI, sans-serif" font-weight="600" font-size="24" fill="#00c2ff">texnobey.az</text>
+</svg>

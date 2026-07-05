@@ -1,0 +1,18 @@
+{
+    "name": "Texnobəy",
+    "short_name": "Texnobəy",
+    "description": "Bakıda kompüter, printer və proyektor satışı, təmir və texniki servis.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#080D1A",
+    "theme_color": "#0057ff",
+    "lang": "az",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

@@ -469,3 +469,30 @@ Route::get('/order-status', function (Request $request) {
         'labels'   => Order::STATUS_LABELS,
     ]);
 })->name('order.status');
+
+// ===== SITEMAP =====
+Route::get('/sitemap.xml', function () {
+    $urls = [
+        ['loc' => url('/'),              'changefreq' => 'daily',   'priority' => '1.0'],
+        ['loc' => url('/#services'),     'changefreq' => 'monthly', 'priority' => '0.8'],
+        ['loc' => url('/#products'),     'changefreq' => 'weekly',  'priority' => '0.9'],
+        ['loc' => url('/#about'),        'changefreq' => 'yearly',  'priority' => '0.6'],
+        ['loc' => url('/#contact'),      'changefreq' => 'yearly',  'priority' => '0.6'],
+        ['loc' => url('/order-status'),  'changefreq' => 'monthly', 'priority' => '0.5'],
+    ];
+    $today = now()->toDateString();
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($urls as $u) {
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>" . htmlspecialchars($u['loc']) . "</loc>\n";
+        $xml .= "    <lastmod>{$today}</lastmod>\n";
+        $xml .= "    <changefreq>{$u['changefreq']}</changefreq>\n";
+        $xml .= "    <priority>{$u['priority']}</priority>\n";
+        $xml .= "  </url>\n";
+    }
+    $xml .= '</urlset>' . "\n";
+
+    return response($xml, 200, ['Content-Type' => 'application/xml; charset=utf-8']);
+});
