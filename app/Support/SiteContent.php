@@ -2,8 +2,11 @@
 
 namespace App\Support;
 
+use App\Mail\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SiteContent
 {
@@ -170,16 +173,30 @@ class SiteContent
     private static function saveOrdersSection(array $data): void
     {
         $list = $data['list'] ?? [];
-        $existingIds = Order::pluck('id')->all();
-        $incomingIds = [];
+        $incomingIds = collect($list)->pluck('id')->filter()->map(fn ($v) => (int) $v)->all();
+        $existing = Order::whereIn('id', $incomingIds)->get()->keyBy('id');
+
         foreach ($list as $item) {
-            if (!empty($item['id'])) {
-                $incomingIds[] = (int)$item['id'];
-                if (isset($item['status']) && in_array($item['status'], Order::STATUSES, true)) {
-                    Order::where('id', (int)$item['id'])->update(['status' => $item['status']]);
+            if (empty($item['id'])) continue;
+            $id = (int) $item['id'];
+            if (!isset($item['status']) || !in_array($item['status'], Order::STATUSES, true)) continue;
+
+            $order = $existing[$id] ?? null;
+            if (!$order || $order->status === $item['status']) continue;
+
+            $order->status = $item['status'];
+            $order->save();
+
+            if (!empty($order->email)) {
+                try {
+                    Mail::to($order->email)->send(new OrderStatusUpdated($order));
+                } catch (\Throwable $e) {
+                    Log::error('Order status mail send failed: ' . $e->getMessage());
                 }
             }
         }
+
+        $existingIds = Order::pluck('id')->all();
         $toDelete = array_diff($existingIds, $incomingIds);
         if (!empty($toDelete)) {
             Order::whereIn('id', $toDelete)->delete();

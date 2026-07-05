@@ -75,7 +75,6 @@ Route::post('/order', function (Request $request) {
     ]);
 
     $order = SiteContent::appendOrder($data);
-    Log::info('TechnoBey order', $data);
 
     // Bildiriş email-ləri — sifariş uğurla yadda saxlandı, mail xətası
     // müştəriyə sızmamalıdır.
