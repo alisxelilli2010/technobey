@@ -190,18 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Language menu
-function toggleLangMenu(e) {
-  e.stopPropagation();
-  const m = document.getElementById('langMenu');
-  if (!m) return;
-  m.classList.toggle('open');
-}
-document.addEventListener('click', (e) => {
-  const m = document.getElementById('langMenu');
-  if (m && !e.target.closest('.lang-switcher')) m.classList.remove('open');
-});
-
 // Məhsul kartından "Sifariş et" klikləyəndə formu doldur
 function selectProduct(linkEl, name, cat, price, unit) {
   const form = document.getElementById('orderForm');

@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
+﻿<!DOCTYPE html>
+<html lang="az">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,15 +27,6 @@
     <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
     <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
     <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
-    <li class="lang-switcher">
-      <button type="button" class="lang-btn" onclick="toggleLangMenu(event)" title="{{ __('site.nav.language') }}">🌐 {{ strtoupper(app()->getLocale()) }}</button>
-      <div class="lang-menu" id="langMenu">
-        <a href="{{ route('lang.set', 'az') }}?back={{ urlencode(url()->full()) }}">🇦🇿 Azərbaycan</a>
-        <a href="{{ route('lang.set', 'en') }}?back={{ urlencode(url()->full()) }}">🇬🇧 English</a>
-        <a href="{{ route('lang.set', 'ru') }}?back={{ urlencode(url()->full()) }}">🇷🇺 Русский</a>
-      </div>
-    </li>
-    <li><button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}"><span id="themeBtnIco">🌙</span></button></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="{{ __('site.nav.menu') }}">
     <span></span><span></span><span></span>
@@ -51,19 +42,18 @@
   <a href="#contact" onclick="closeMobile()">{{ __('site.nav.contact') }}</a>
   <a href="{{ route('order.status') }}" onclick="closeMobile()">{{ __('site.nav.track') }}</a>
   <a href="#order" onclick="closeMobile()" class="btn-primary">{{ __('site.nav.order') }}</a>
-  <button type="button" class="theme-btn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" style="margin-top:8px"><span id="themeBtnIcoMobile">🌙</span></button>
 </div>
 
 <!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-grid">
     <div>
-      <div class="hero-badge">{{ l($hero['badge'] ?? '') }}</div>
-      <h1>{!! l($hero['title'] ?? '') !!}</h1>
-      <p>{{ l($hero['sub'] ?? '') }}</p>
+      <div class="hero-badge">{{ $hero['badge'] ?? '' }}</div>
+      <h1>{!! $hero['title'] ?? '' !!}</h1>
+      <p>{{ $hero['sub'] ?? '' }}</p>
       <div class="hero-actions">
-        <a href="{{ $hero['btn1Link'] ?? '#' }}" class="btn-primary">{{ l($hero['btn1Text'] ?? '') }}</a>
-        <a href="{{ $hero['btn2Link'] ?? '#' }}" class="btn-secondary">{{ l($hero['btn2Text'] ?? '') }}</a>
+        <a href="{{ $hero['btn1Link'] ?? '#' }}" class="btn-primary">{{ $hero['btn1Text'] ?? '' }}</a>
+        <a href="{{ $hero['btn2Link'] ?? '#' }}" class="btn-secondary">{{ $hero['btn2Text'] ?? '' }}</a>
       </div>
       <div class="hero-stats reveal-stagger">
         @foreach (($hero['stats'] ?? []) as $stat)
@@ -76,7 +66,7 @@
         @endphp
         <div class="stat-item">
           <div class="stat-num"><span data-counter data-target="{{ $numDigits }}">0</span><span>{{ $numSuffix }}</span></div>
-          <div class="stat-label">{{ l($stat['label'] ?? '') }}</div>
+          <div class="stat-label">{{ $stat['label'] ?? '' }}</div>
         </div>
         @endforeach
       </div>
@@ -85,19 +75,19 @@
       @foreach (($hero['devices'] ?? []) as $idx => $dev)
       <div class="device-card{{ $idx === 0 ? ' featured' : '' }}">
         @if (!empty($dev['image']))
-          <div class="device-img"><img src="{{ $dev['image'] }}" alt="{{ l($dev['title'] ?? '') }}" loading="lazy"></div>
+          <div class="device-img"><img src="{{ $dev['image'] }}" alt="{{ $dev['title'] ?? '' }}" loading="lazy"></div>
         @else
           <div class="device-icon">{{ $dev['emoji'] ?? '' }}</div>
         @endif
         @if ($idx === 0)
         <div>
           <div class="device-tag">{{ __('site.hero.bestseller') }}</div>
-          <h3>{{ l($dev['title'] ?? '') }}</h3>
-          <p>{{ l($dev['desc'] ?? '') }}</p>
+          <h3>{{ $dev['title'] ?? '' }}</h3>
+          <p>{{ $dev['desc'] ?? '' }}</p>
         </div>
         @else
-        <h3>{{ l($dev['title'] ?? '') }}</h3>
-        <p>{{ l($dev['desc'] ?? '') }}</p>
+        <h3>{{ $dev['title'] ?? '' }}</h3>
+        <p>{{ $dev['desc'] ?? '' }}</p>
         @endif
       </div>
       @endforeach
@@ -114,8 +104,8 @@
       <div class="trust-card">
         <div class="trust-icon">{{ $card['icon'] ?? '✅' }}</div>
         <div class="trust-body">
-          <h4>{{ l($card['title'] ?? '') }}</h4>
-          <p>{{ l($card['desc'] ?? '') }}</p>
+          <h4>{{ $card['title'] ?? '' }}</h4>
+          <p>{{ $card['desc'] ?? '' }}</p>
         </div>
       </div>
       @endforeach
@@ -128,21 +118,21 @@
 <section class="section services" id="services">
   <div class="container">
     <div class="section-header reveal-up">
-      <div class="eyebrow">{{ l($services['eyebrow'] ?? '') }}</div>
-      <h2 class="section-title">{!! l($services['title'] ?? '') !!}</h2>
-      <p class="section-sub">{{ l($services['sub'] ?? '') }}</p>
+      <div class="eyebrow">{{ $services['eyebrow'] ?? '' }}</div>
+      <h2 class="section-title">{!! $services['title'] ?? '' !!}</h2>
+      <p class="section-sub">{{ $services['sub'] ?? '' }}</p>
     </div>
     <div class="services-grid reveal-stagger">
       @foreach (($services['cards'] ?? []) as $card)
       <div class="service-card">
         @if (!empty($card['image']))
-          <div class="service-img"><img src="{{ $card['image'] }}" alt="{{ l($card['title'] ?? '') }}" loading="lazy"></div>
+          <div class="service-img"><img src="{{ $card['image'] }}" alt="{{ $card['title'] ?? '' }}" loading="lazy"></div>
         @else
           <div class="service-ico">{{ $card['icon'] ?? '' }}</div>
         @endif
-        <h3>{{ l($card['title'] ?? '') }}</h3>
-        <p>{{ l($card['desc'] ?? '') }}</p>
-        <a href="{{ $card['link'] ?? '#' }}" class="service-link">{{ l($card['linkText'] ?? '') }}</a>
+        <h3>{{ $card['title'] ?? '' }}</h3>
+        <p>{{ $card['desc'] ?? '' }}</p>
+        <a href="{{ $card['link'] ?? '#' }}" class="service-link">{{ $card['linkText'] ?? '' }}</a>
       </div>
       @endforeach
     </div>
@@ -153,23 +143,22 @@
 <section class="section products" id="products">
   <div class="container">
     <div class="section-header reveal-up">
-      <div class="eyebrow">{{ l($products['eyebrow'] ?? '') ?: __('site.nav.products') }}</div>
-      <h2 class="section-title">{!! l($products['title'] ?? '') !!}</h2>
-      <p class="section-sub">{{ l($products['sub'] ?? '') }}</p>
+      <div class="eyebrow">{{ $products['eyebrow'] ?? '' ?: __('site.nav.products') }}</div>
+      <h2 class="section-title">{!! $products['title'] ?? '' !!}</h2>
+      <p class="section-sub">{{ $products['sub'] ?? '' }}</p>
     </div>
     <div class="product-toolbar">
       <input type="text" class="search-input" id="productSearch" placeholder="{{ __('site.filter.search') }}" oninput="filterProducts()">
       <div class="filter-bar" id="filterBar">
         <button class="filter-btn active" data-cat="all" onclick="setCatFilter('all', this)">{{ __('site.filter.all') }}</button>
         @foreach ($categories as $c)
-          <button class="filter-btn" data-cat="{{ $c->slug }}" onclick="setCatFilter('{{ $c->slug }}', this)">{{ $c->icon }} {{ $c->localizedName(app()->getLocale()) }}</button>
+          <button class="filter-btn" data-cat="{{ $c->slug }}" onclick="setCatFilter('{{ $c->slug }}', this)">{{ $c->icon }} {{ $c->name }}</button>
         @endforeach
       </div>
     </div>
     @php
-      $locale = app()->getLocale();
       $catNames = [];
-      foreach ($categories as $c) $catNames[$c->slug] = $c->localizedName($locale);
+      foreach ($categories as $c) $catNames[$c->slug] = $c->name;
       $unitMap = [
         'ədəd' => __('site.unit.piece'),
         'dəst' => __('site.unit.set'),
@@ -183,13 +172,10 @@
         $gallery = array_values(array_filter($p['images'] ?? []));
         if (!empty($p['image']) && !in_array($p['image'], $gallery, true)) array_unshift($gallery, $p['image']);
         $stock = (int)($p['stock'] ?? 0);
-        $pName = $locale === 'en' && !empty($p['name_en']) ? $p['name_en']
-               : ($locale === 'ru' && !empty($p['name_ru']) ? $p['name_ru'] : ($p['name'] ?? ''));
-        $pDesc = $locale === 'en' && !empty($p['desc_en']) ? $p['desc_en']
-               : ($locale === 'ru' && !empty($p['desc_ru']) ? $p['desc_ru'] : ($p['desc'] ?? ''));
+        $pName = $p['name'] ?? '';
+        $pDesc = $p['desc'] ?? '';
         $searchBlob = mb_strtolower(
-          ($p['name'] ?? '') . ' ' . ($p['name_en'] ?? '') . ' ' . ($p['name_ru'] ?? '') . ' ' .
-          ($p['desc'] ?? '') . ' ' . ($p['desc_en'] ?? '') . ' ' . ($p['desc_ru'] ?? '') . ' ' .
+          ($p['name'] ?? '') . ' ' . ($p['desc'] ?? '') . ' ' .
           ($catNames[$p['cat'] ?? ''] ?? '')
         );
       @endphp
@@ -249,16 +235,16 @@
   <div class="container">
     <div class="why-grid">
       <div class="why-text">
-        <div class="eyebrow">{{ l($why['eyebrow'] ?? '') }}</div>
-        <h2>{!! l($why['title'] ?? '') !!}</h2>
-        <p>{{ l($why['sub'] ?? '') }}</p>
+        <div class="eyebrow">{{ $why['eyebrow'] ?? '' }}</div>
+        <h2>{!! $why['title'] ?? '' !!}</h2>
+        <p>{{ $why['sub'] ?? '' }}</p>
         <div class="why-features reveal-stagger">
           @foreach (($why['features'] ?? []) as $feat)
           <div class="why-feature">
             <div class="feature-icon">{{ $feat['icon'] ?? '' }}</div>
             <div class="feature-txt">
-              <h4>{{ l($feat['title'] ?? '') }}</h4>
-              <p>{{ l($feat['desc'] ?? '') }}</p>
+              <h4>{{ $feat['title'] ?? '' }}</h4>
+              <p>{{ $feat['desc'] ?? '' }}</p>
             </div>
           </div>
           @endforeach
@@ -272,7 +258,7 @@
         @endphp
         <div class="metric-card{{ ($idx === count($why['metrics'] ?? []) - 1 && count($why['metrics'] ?? []) % 2 === 1) ? ' wide' : '' }}">
           <div class="big"><span data-counter data-target="{{ $metDigits }}">0</span><span>{{ $met['suffix'] ?? '' }}</span></div>
-          <small>{{ l($met['label'] ?? '') }}</small>
+          <small>{{ $met['label'] ?? '' }}</small>
         </div>
         @endforeach
       </div>
@@ -336,19 +322,19 @@
     <div class="about-grid reveal-up">
       <div class="about-text">
         <div class="about-badges">
-          <span class="badge">{{ l($about['badge1'] ?? '') }}</span>
-          <span class="badge">{{ l($about['badge2'] ?? '') }}</span>
-          <span class="badge">{{ l($about['badge3'] ?? '') }}</span>
+          <span class="badge">{{ $about['badge1'] ?? '' }}</span>
+          <span class="badge">{{ $about['badge2'] ?? '' }}</span>
+          <span class="badge">{{ $about['badge3'] ?? '' }}</span>
         </div>
-        <h2>{{ l($about['title'] ?? '') }}</h2>
-        <p>{{ l($about['text'] ?? '') }}</p>
+        <h2>{{ $about['title'] ?? '' }}</h2>
+        <p>{{ $about['text'] ?? '' }}</p>
 
-        <a href="{{ $about['btnLink'] ?? '#' }}" class="btn-primary" style="display:inline-flex">{{ l($about['btnText'] ?? '') }}</a>
+        <a href="{{ $about['btnLink'] ?? '#' }}" class="btn-primary" style="display:inline-flex">{{ $about['btnText'] ?? '' }}</a>
       </div>
       <div class="about-img-wrap">
         <div class="about-icon">{{ $about['icon'] ?? '🏪' }}</div>
-        <h3>{{ l($about['centerName'] ?? '') }}</h3>
-        <p>{{ l($about['centerAddr'] ?? '') }}</p>
+        <h3>{{ $about['centerName'] ?? '' }}</h3>
+        <p>{{ $about['centerAddr'] ?? '' }}</p>
         <br>
         @php
           preg_match('/([0-9.]+)/u', $about['met1Num'] ?? '', $am1);
@@ -358,8 +344,8 @@
           $am2s = trim(str_replace($am2d, '', $about['met2Num'] ?? ''));
         @endphp
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%">
-          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am1d }}">0</span>{{ $am1s }}</div><small>{{ l($about['met1Lbl'] ?? '') }}</small></div>
-          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am2d }}">0</span>{{ $am2s }}</div><small>{{ l($about['met2Lbl'] ?? '') }}</small></div>
+          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am1d }}">0</span>{{ $am1s }}</div><small>{{ $about['met1Lbl'] ?? '' }}</small></div>
+          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am2d }}">0</span>{{ $am2s }}</div><small>{{ $about['met2Lbl'] ?? '' }}</small></div>
         </div>
       </div>
     </div>
@@ -378,8 +364,8 @@
     <div class="testimonials-grid reveal-stagger">
       @foreach ($testimonials as $t)
       @php
-        $tText = l_from_db($t, 'text');
-        $tPos  = l_from_db($t, 'position');
+        $tText = $t->text;
+        $tPos  = $t->position;
       @endphp
       <div class="testimonial-card">
         <div class="testimonial-stars">
@@ -417,9 +403,9 @@
 <section class="section contact" id="contact">
   <div class="container">
     <div class="section-header reveal-up">
-      <div class="eyebrow">{{ l($contact['eyebrow'] ?? '') }}</div>
-      <h2 class="section-title">{{ l($contact['title'] ?? '') }}</h2>
-      <p class="section-sub">{{ l($contact['sub'] ?? '') }}</p>
+      <div class="eyebrow">{{ $contact['eyebrow'] ?? '' }}</div>
+      <h2 class="section-title">{{ $contact['title'] ?? '' }}</h2>
+      <p class="section-sub">{{ $contact['sub'] ?? '' }}</p>
     </div>
     <div class="contact-grid reveal-up">
       <div class="contact-info">
@@ -427,7 +413,7 @@
           <div class="contact-ico">📍</div>
           <div>
             <h4>{{ __('site.contact.address') }}</h4>
-            <p>{{ l($contact['addr'] ?? '') }}<br><small style="color:var(--muted)">{{ l($contact['addrNote'] ?? '') }}</small></p>
+            <p>{{ $contact['addr'] ?? '' }}<br><small style="color:var(--muted)">{{ $contact['addrNote'] ?? '' }}</small></p>
           </div>
         </div>
         <div class="contact-card">

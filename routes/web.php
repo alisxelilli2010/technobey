@@ -346,27 +346,23 @@ Route::post('/api/products/{product}/view', function (Request $request, Product 
 Route::get('/api/categories', function () {
     return response()->json(
         Category::orderBy('sort_order')->orderBy('id')->get()->map(fn ($c) => [
-            'id'       => $c->id,
-            'slug'     => $c->slug,
-            'name_az'  => $c->name_az,
-            'name_en'  => $c->name_en,
-            'name_ru'  => $c->name_ru,
-            'icon'     => $c->icon,
-            'sort'     => $c->sort_order,
+            'id'   => $c->id,
+            'slug' => $c->slug,
+            'name' => $c->name,
+            'icon' => $c->icon,
+            'sort' => $c->sort_order,
         ])->all()
     );
 });
 
 Route::post('/api/categories', function (Request $request) {
     $data = $request->validate([
-        'items'                => 'required|array',
-        'items.*.id'           => 'nullable|integer',
-        'items.*.slug'         => 'required|string|max:60|regex:/^[a-z0-9_-]+$/',
-        'items.*.name_az'      => 'required|string|max:80',
-        'items.*.name_en'      => 'nullable|string|max:80',
-        'items.*.name_ru'      => 'nullable|string|max:80',
-        'items.*.icon'         => 'nullable|string|max:8',
-        'items.*.sort'         => 'nullable|integer',
+        'items'        => 'required|array',
+        'items.*.id'   => 'nullable|integer',
+        'items.*.slug' => 'required|string|max:60|regex:/^[a-z0-9_-]+$/',
+        'items.*.name' => 'required|string|max:80',
+        'items.*.icon' => 'nullable|string|max:8',
+        'items.*.sort' => 'nullable|integer',
     ]);
     $incoming = collect($data['items']);
     $existingIds = Category::pluck('id')->all();
@@ -374,9 +370,7 @@ Route::post('/api/categories', function (Request $request) {
     foreach ($incoming as $item) {
         $payload = [
             'slug'       => $item['slug'],
-            'name_az'    => $item['name_az'],
-            'name_en'    => $item['name_en'] ?? null,
-            'name_ru'    => $item['name_ru'] ?? null,
+            'name'       => $item['name'],
             'icon'       => $item['icon'] ?: '📦',
             'sort_order' => (int)($item['sort'] ?? 0),
         ];
@@ -397,16 +391,12 @@ Route::get('/api/testimonials', function () {
         Testimonial::where('published', true)
             ->orderBy('sort_order')->orderBy('id')
             ->get()->map(fn ($t) => [
-                'id'          => $t->id,
-                'name'        => $t->name,
-                'position'    => $t->position,
-                'position_en' => $t->position_en,
-                'position_ru' => $t->position_ru,
-                'text'        => $t->text,
-                'text_en'     => $t->text_en,
-                'text_ru'     => $t->text_ru,
-                'avatar'      => $t->avatar,
-                'rating'      => (int) $t->rating,
+                'id'       => $t->id,
+                'name'     => $t->name,
+                'position' => $t->position,
+                'text'     => $t->text,
+                'avatar'   => $t->avatar,
+                'rating'   => (int) $t->rating,
             ])->all()
     );
 });
@@ -414,53 +404,41 @@ Route::get('/api/testimonials', function () {
 Route::get('/api/admin/testimonials', function () {
     return response()->json(
         Testimonial::orderBy('sort_order')->orderBy('id')->get()->map(fn ($t) => [
-            'id'          => $t->id,
-            'name'        => $t->name,
-            'position'    => $t->position,
-            'position_en' => $t->position_en,
-            'position_ru' => $t->position_ru,
-            'text'        => $t->text,
-            'text_en'     => $t->text_en,
-            'text_ru'     => $t->text_ru,
-            'avatar'      => $t->avatar,
-            'rating'      => (int) $t->rating,
-            'sort'        => (int) $t->sort_order,
-            'published'   => (bool) $t->published,
+            'id'        => $t->id,
+            'name'      => $t->name,
+            'position'  => $t->position,
+            'text'      => $t->text,
+            'avatar'    => $t->avatar,
+            'rating'    => (int) $t->rating,
+            'sort'      => (int) $t->sort_order,
+            'published' => (bool) $t->published,
         ])->all()
     );
 })->middleware('auth');
 
 Route::post('/api/admin/testimonials', function (Request $request) {
     $data = $request->validate([
-        'items'                  => 'required|array',
-        'items.*.id'             => 'nullable|integer',
-        'items.*.name'           => 'required|string|max:120',
-        'items.*.position'       => 'nullable|string|max:160',
-        'items.*.position_en'    => 'nullable|string|max:160',
-        'items.*.position_ru'    => 'nullable|string|max:160',
-        'items.*.text'           => 'required|string|max:2000',
-        'items.*.text_en'        => 'nullable|string|max:2000',
-        'items.*.text_ru'        => 'nullable|string|max:2000',
-        'items.*.avatar'         => 'nullable|string|max:255',
-        'items.*.rating'         => 'nullable|integer|min:1|max:5',
-        'items.*.sort'           => 'nullable|integer',
-        'items.*.published'      => 'nullable|boolean',
+        'items'             => 'required|array',
+        'items.*.id'        => 'nullable|integer',
+        'items.*.name'      => 'required|string|max:120',
+        'items.*.position'  => 'nullable|string|max:160',
+        'items.*.text'      => 'required|string|max:2000',
+        'items.*.avatar'    => 'nullable|string|max:255',
+        'items.*.rating'    => 'nullable|integer|min:1|max:5',
+        'items.*.sort'      => 'nullable|integer',
+        'items.*.published' => 'nullable|boolean',
     ]);
     $existingIds = Testimonial::pluck('id')->all();
     $keptIds = [];
     foreach ($data['items'] as $item) {
         $payload = [
-            'name'        => $item['name'],
-            'position'    => $item['position']    ?? null,
-            'position_en' => $item['position_en'] ?? null,
-            'position_ru' => $item['position_ru'] ?? null,
-            'text'        => $item['text'],
-            'text_en'     => $item['text_en']     ?? null,
-            'text_ru'     => $item['text_ru']     ?? null,
-            'avatar'      => $item['avatar']      ?? null,
-            'rating'      => (int) ($item['rating'] ?? 5),
-            'sort_order'  => (int) ($item['sort'] ?? 0),
-            'published'   => (bool) ($item['published'] ?? true),
+            'name'       => $item['name'],
+            'position'   => $item['position'] ?? null,
+            'text'       => $item['text'],
+            'avatar'     => $item['avatar']   ?? null,
+            'rating'     => (int) ($item['rating'] ?? 5),
+            'sort_order' => (int) ($item['sort'] ?? 0),
+            'published'  => (bool) ($item['published'] ?? true),
         ];
         if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {
             Testimonial::where('id', $item['id'])->update($payload);
@@ -472,21 +450,6 @@ Route::post('/api/admin/testimonials', function (Request $request) {
     Testimonial::whereNotIn('id', $keptIds)->delete();
     return response()->json(['ok' => true]);
 })->middleware('auth');
-
-// ===== LANGUAGE =====
-Route::get('/lang/{locale}', function (string $locale, Request $request) {
-    $allowed = \App\Http\Middleware\SetLocale::SUPPORTED;
-    if (!in_array($locale, $allowed, true)) {
-        $locale = \App\Http\Middleware\SetLocale::DEFAULT;
-    }
-    $back = $request->query('back') ?: url('/');
-    // Same-origin check to avoid open redirect
-    $host = parse_url($back, PHP_URL_HOST);
-    if ($host && $host !== $request->getHost()) {
-        $back = url('/');
-    }
-    return redirect($back)->cookie('tb_lang', $locale, 60 * 24 * 365, '/');
-})->name('lang.set');
 
 // ===== ORDER TRACKING (public) =====
 Route::get('/order-status', function (Request $request) {

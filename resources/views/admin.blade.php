@@ -118,9 +118,6 @@
   .topbar-home:hover { border-color: var(--blue); color: var(--white); background: rgba(0,87,255,0.08); }
   .topbar-home-ico { font-size: 1rem; }
   .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .edit-lang-picker { display: inline-flex; align-items: center; gap: 8px; }
-  .edit-lang-label { color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  @media (max-width: 720px) { .edit-lang-label { display: none; } }
   .theme-toggle {
     width: 40px; height: 40px; border-radius: 50%;
     background: transparent; border: 1px solid var(--border);
@@ -305,13 +302,27 @@
   }
   .price-cell { font-weight: 700; color: var(--white); }
   .action-btns { display: flex; gap: 8px; }
-  .edit-btn, .del-btn {
+  .edit-btn, .del-btn, .info-btn {
     padding: 6px 14px; border-radius: 7px; font-size: 0.78rem;
     font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.2s;
   }
   .edit-btn { background: rgba(0,87,255,0.2); color: var(--cyan); }
   .del-btn { background: rgba(220,38,38,0.15); color: #f87171; }
-  .edit-btn:hover, .del-btn:hover { opacity: 0.75; }
+  .info-btn { background: rgba(0,194,255,0.15); color: #22d3ee; }
+  .edit-btn:hover, .del-btn:hover, .info-btn:hover { opacity: 0.75; }
+  /* Order detail modal */
+  .order-detail-grid { display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; margin-top: 8px; }
+  .order-detail-grid dt { font-size: 0.78rem; color: var(--muted); align-self: center; }
+  .order-detail-grid dd { margin: 0; font-size: 0.9rem; color: var(--white); font-weight: 600; word-break: break-word; }
+  .order-detail-grid dd a { color: var(--cyan); text-decoration: none; }
+  .order-detail-grid dd a:hover { text-decoration: underline; }
+  .order-detail-grid dd.notes { font-weight: 500; white-space: pre-wrap; line-height: 1.6; color: var(--muted); }
+  .order-detail-track {
+    background: rgba(0,194,255,0.08); border: 1px solid rgba(0,194,255,0.25);
+    border-radius: 12px; padding: 14px 18px; text-align: center; margin-bottom: 18px;
+  }
+  .order-detail-track .lbl { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .order-detail-track .code { font-family: monospace; font-size: 1.35rem; font-weight: 800; color: var(--cyan); letter-spacing: 1px; }
   .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
   .empty-state .ico { font-size: 3rem; margin-bottom: 12px; }
 
@@ -415,28 +426,6 @@
     display: inline-flex; align-items: center; justify-content: center;
   }
   .gallery-thumb-del:hover { background: #dc2626; }
-
-  /* LANG TABS (multi-language content editor) */
-  .lang-tabs {
-    display: inline-flex; gap: 4px; padding: 3px;
-    background: var(--card-soft); border: 1px solid var(--border);
-    border-radius: 100px; margin-bottom: 8px;
-  }
-  .lang-tab {
-    background: transparent; border: 0; padding: 4px 12px;
-    font-size: 0.72rem; font-weight: 700; color: var(--muted);
-    border-radius: 100px; cursor: pointer; font-family: inherit;
-    transition: background 0.15s, color 0.15s;
-  }
-  .lang-tab:hover { color: var(--white); }
-  .lang-tab.active {
-    background: linear-gradient(135deg, var(--blue), var(--cyan));
-    color: #fff;
-  }
-  .lang-tab .flag { font-size: 0.85rem; margin-right: 4px; }
-  .lang-input { display: none; }
-  .lang-input.active { display: block; }
-  .form-grp.lang-group > label { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
   /* STOCK BADGE (admin table) */
   .stock-tag {
@@ -586,17 +575,6 @@
         <span class="topbar-home-ico">🏠</span> Əsas səhifə
       </button>
       <div class="topbar-right">
-        <div class="edit-lang-picker" title="Bölmə formalarını hansı dildə redaktə edirsən">
-          <span class="edit-lang-label">Redaktə:</span>
-          <div class="lang-tabs" data-lgroup="editLang" style="margin:0">
-            <button type="button" class="lang-tab active" data-lgroup="editLang" data-llang="az" onclick="switchEditLang('az', this)"><span class="flag">🇦🇿</span>AZ</button>
-            <button type="button" class="lang-tab" data-lgroup="editLang" data-llang="en" onclick="switchEditLang('en', this)"><span class="flag">🇬🇧</span>EN</button>
-            <button type="button" class="lang-tab" data-lgroup="editLang" data-llang="ru" onclick="switchEditLang('ru', this)"><span class="flag">🇷🇺</span>RU</button>
-          </div>
-        </div>
-        <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Rejimi dəyiş">
-          <span id="themeToggleIco">🌙</span>
-        </button>
         <div class="user-badge" id="userBadge" onclick="showPage('profile', null)" title="Profil">
           <div class="user-badge-avatar" id="userBadgeAvatar"><span id="userBadgeInitial">?</span></div>
           <div class="user-badge-name" id="userBadgeName">…</div>
@@ -667,7 +645,7 @@
         <button class="ghost-btn" onclick="clearAllOrders()">🗑️ Hamısını sil</button>
       </div>
       <div class="info-note">
-        ℹ️ <strong>Qeyd:</strong> Sayt formdan gələn sifarişlər hazırda Laravel log-da yazılır (<code>storage/logs/laravel.log</code>). Brauzer tərəfdə test üçün saxlanan sifarişlər aşağıda görünür.
+        ℹ️ <strong>Qeyd:</strong> Formdan gələn sifarişlər verilənlər bazasına yazılır və admin email-inə bildiriş göndərilir. Status dəyişəndə müştəri də email ilə xəbərdar olur.
       </div>
       <div class="table-wrap">
         <table>
@@ -947,16 +925,8 @@
         <input type="hidden" id="editId">
         <div class="form-row">
           <div class="form-grp">
-            <label>Məhsul adı *
-              <span class="lang-tabs" data-lgroup="fName">
-                <button type="button" class="lang-tab active" data-lgroup="fName" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-                <button type="button" class="lang-tab" data-lgroup="fName" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-                <button type="button" class="lang-tab" data-lgroup="fName" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-              </span>
-            </label>
-            <input type="text" id="fName" data-lgroup="fName" data-llang="az" class="lang-input active" placeholder="məs. HP LaserJet Pro">
-            <input type="text" id="fNameEn" data-lgroup="fName" data-llang="en" class="lang-input" placeholder="e.g. HP LaserJet Pro">
-            <input type="text" id="fNameRu" data-lgroup="fName" data-llang="ru" class="lang-input" placeholder="напр. HP LaserJet Pro">
+            <label>Məhsul adı *</label>
+            <input type="text" id="fName" placeholder="məs. HP LaserJet Pro">
           </div>
           <div class="form-grp">
             <label>Kateqoriya *</label>
@@ -1000,16 +970,8 @@
             <button type="button" class="ghost-btn" onclick="document.getElementById('fGalleryFile').click()" style="margin-top:8px">➕ Şəkil əlavə et</button>
           </div>
           <div class="form-grp full">
-            <label>Qısa açıqlama *
-              <span class="lang-tabs" data-lgroup="fDesc">
-                <button type="button" class="lang-tab active" data-lgroup="fDesc" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-                <button type="button" class="lang-tab" data-lgroup="fDesc" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-                <button type="button" class="lang-tab" data-lgroup="fDesc" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-              </span>
-            </label>
-            <textarea id="fDesc" data-lgroup="fDesc" data-llang="az" class="lang-input active" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
-            <textarea id="fDescEn" data-lgroup="fDesc" data-llang="en" class="lang-input" placeholder="Color printing, Wi-Fi, 3-in-1"></textarea>
-            <textarea id="fDescRu" data-lgroup="fDesc" data-llang="ru" class="lang-input" placeholder="Цветная печать, Wi-Fi, 3-в-1"></textarea>
+            <label>Qısa açıqlama *</label>
+            <textarea id="fDesc" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
           </div>
           <div class="form-grp">
             <label>Qiymət vahidi</label>
@@ -1137,16 +1099,8 @@
     <input type="hidden" id="eId">
     <div class="form-row">
       <div class="form-grp">
-        <label>Məhsul adı *
-          <span class="lang-tabs" data-lgroup="eName">
-            <button type="button" class="lang-tab active" data-lgroup="eName" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-            <button type="button" class="lang-tab" data-lgroup="eName" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-            <button type="button" class="lang-tab" data-lgroup="eName" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-          </span>
-        </label>
-        <input type="text" id="eName" data-lgroup="eName" data-llang="az" class="lang-input active" placeholder="məs. HP LaserJet Pro">
-        <input type="text" id="eNameEn" data-lgroup="eName" data-llang="en" class="lang-input" placeholder="e.g. HP LaserJet Pro">
-        <input type="text" id="eNameRu" data-lgroup="eName" data-llang="ru" class="lang-input" placeholder="напр. HP LaserJet Pro">
+        <label>Məhsul adı *</label>
+        <input type="text" id="eName" placeholder="məs. HP LaserJet Pro">
       </div>
       <div class="form-grp">
         <label>Kateqoriya *</label>
@@ -1190,16 +1144,8 @@
         <button type="button" class="ghost-btn" onclick="document.getElementById('eGalleryFile').click()" style="margin-top:8px">➕ Şəkil əlavə et</button>
       </div>
       <div class="form-grp full">
-        <label>Qısa açıqlama *
-          <span class="lang-tabs" data-lgroup="eDesc">
-            <button type="button" class="lang-tab active" data-lgroup="eDesc" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-            <button type="button" class="lang-tab" data-lgroup="eDesc" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-            <button type="button" class="lang-tab" data-lgroup="eDesc" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-          </span>
-        </label>
-        <textarea id="eDesc" data-lgroup="eDesc" data-llang="az" class="lang-input active" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
-        <textarea id="eDescEn" data-lgroup="eDesc" data-llang="en" class="lang-input" placeholder="Color printing, Wi-Fi, 3-in-1"></textarea>
-        <textarea id="eDescRu" data-lgroup="eDesc" data-llang="ru" class="lang-input" placeholder="Цветная печать, Wi-Fi, 3-в-1"></textarea>
+        <label>Qısa açıqlama *</label>
+        <textarea id="eDesc" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
       </div>
       <div class="form-grp">
         <label>Qiymət vahidi</label>
@@ -1231,6 +1177,31 @@
 </div>
 
 <!-- ORDER DELETE CONFIRM MODAL -->
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal" style="max-width:560px">
+    <button type="button" class="modal-close" onclick="closeOrderDetailModal()" aria-label="Bağla">✕</button>
+    <h3>📋 Sifariş detalları</h3>
+    <div class="order-detail-track" id="orderDetailTrackWrap" style="display:none">
+      <div class="lbl">İzləmə kodu</div>
+      <div class="code" id="orderDetailTrack">—</div>
+    </div>
+    <dl class="order-detail-grid">
+      <dt>Sifariş ID</dt><dd id="orderDetailId">—</dd>
+      <dt>Ad Soyad</dt><dd id="orderDetailName">—</dd>
+      <dt>Telefon</dt><dd id="orderDetailPhone">—</dd>
+      <dt>Email</dt><dd id="orderDetailEmail">—</dd>
+      <dt>Xidmət</dt><dd id="orderDetailService">—</dd>
+      <dt>Status</dt><dd id="orderDetailStatus">—</dd>
+      <dt>Sifariş vaxtı</dt><dd id="orderDetailDate">—</dd>
+      <dt>Qeyd</dt><dd class="notes" id="orderDetailNotes">—</dd>
+    </dl>
+    <div class="modal-actions" style="margin-top:22px">
+      <button class="cancel-btn" onclick="closeOrderDetailModal()">Bağla</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="orderDeleteModal">
   <div class="modal" style="max-width:400px;text-align:center">
     <div style="font-size:2.5rem;margin-bottom:12px">🗑️</div>
@@ -1414,48 +1385,13 @@
     applyTheme(saved);
   });
 
-  // ===== EDIT LOCALE (which language is being edited in JSON sections) =====
-  const EDIT_LANG_KEY = 'tb_edit_lang';
-  let _editLang = 'az';
-  try { _editLang = localStorage.getItem(EDIT_LANG_KEY) || 'az'; } catch {}
-  function currentEditLang() { return _editLang; }
-  async function switchEditLang(lang, btn) {
-    if (!['az','en','ru'].includes(lang)) return;
-    _editLang = lang;
-    try { localStorage.setItem(EDIT_LANG_KEY, lang); } catch {}
-    document.querySelectorAll('.lang-tab[data-lgroup="editLang"]').forEach(t => t.classList.toggle('active', t.dataset.llang === lang));
-    // Aktiv bölmə form-unu yenidən yüklə ki yeni dilin dəyərləri görünsün
-    const active = document.querySelector('.page.active');
-    if (!active) return;
-    const id = active.id || '';
-    const name = id.replace(/^page/, '').charAt(0).toLowerCase() + id.replace(/^page/, '').slice(1);
-    try {
-      if (name === 'hero') await loadHero();
-      else if (name === 'trust') await loadTrust();
-      else if (name === 'services') await loadServices();
-      else if (name === 'why') await loadWhy();
-      else if (name === 'about') await loadAbout();
-      else if (name === 'contact') await loadContact();
-    } catch {}
-  }
-  // Populate initial active state on load
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.lang-tab[data-lgroup="editLang"]').forEach(t => t.classList.toggle('active', t.dataset.llang === _editLang));
-  });
-  // ' l' — cari edit locale-ında dəyəri götür (string və ya {az,en,ru} obyekt qəbul edir)
+  // Legacy content may still be stored as {az, en, ru} objects — read AZ string out
+  // when displaying; new saves always write plain strings.
   function lGet(v) {
-    if (v && typeof v === 'object' && !Array.isArray(v)) return v[_editLang] || v.az || '';
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v.az || '';
     return v || '';
   }
-  // Cari locale-ı yeni obyektdə yenilə, digərlərini saxla
-  function lSet(current, newVal) {
-    let obj = (current && typeof current === 'object' && !Array.isArray(current))
-      ? { az: current.az || '', en: current.en || '', ru: current.ru || '' }
-      : { az: (current || ''), en: '', ru: '' };
-    obj[_editLang] = newVal;
-    // Boşdursa az fallback-i saxla, digərlərini null etmirik
-    return obj;
-  }
+  function lSet(_current, newVal) { return newVal; }
 
   // ===== USER WIDGET =====
   let _currentUser = null;
@@ -1595,16 +1531,14 @@
     document.getElementById('categoriesContainer').innerHTML = _cats.map((c, i) => `
       <div class="item-row" data-cat-idx="${i}">
         <div class="item-row-header">
-          <span class="item-row-title">${escapeHtml(c.icon || '📦')} ${escapeHtml(c.name_az || 'Yeni')}</span>
+          <span class="item-row-title">${escapeHtml(c.icon || '📦')} ${escapeHtml(c.name || 'Yeni')}</span>
           <button class="item-row-del" onclick="removeCategory(${i})">🗑️ Sil</button>
         </div>
         <div class="form-row three">
           <div class="form-grp"><label>İkon (emoji)</label><input type="text" value="${escapeAttr(c.icon || '')}" data-fld="icon" maxlength="8"></div>
           <div class="form-grp"><label>Slug (latın hərfi)</label><input type="text" value="${escapeAttr(c.slug || '')}" data-fld="slug" placeholder="komputer"></div>
           <div class="form-grp"><label>Sıra</label><input type="number" value="${c.sort ?? 0}" data-fld="sort"></div>
-          <div class="form-grp"><label>Ad (AZ)</label><input type="text" value="${escapeAttr(c.name_az || '')}" data-fld="name_az"></div>
-          <div class="form-grp"><label>Ad (EN)</label><input type="text" value="${escapeAttr(c.name_en || '')}" data-fld="name_en"></div>
-          <div class="form-grp"><label>Ad (RU)</label><input type="text" value="${escapeAttr(c.name_ru || '')}" data-fld="name_ru"></div>
+          <div class="form-grp"><label>Ad</label><input type="text" value="${escapeAttr(c.name || '')}" data-fld="name"></div>
         </div>
       </div>
     `).join('') || '<div class="empty-state"><div class="ico">🗂️</div><p>Hələ kateqoriya yoxdur</p></div>';
@@ -1615,16 +1549,14 @@
       return {
         id: _cats[i]?.id ?? null,
         slug: get('slug').toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 60),
-        name_az: get('name_az'),
-        name_en: get('name_en') || null,
-        name_ru: get('name_ru') || null,
+        name: get('name'),
         icon: get('icon') || '📦',
         sort: parseInt(get('sort'), 10) || 0,
       };
     });
   }
   function addCategory() {
-    _cats.push({ id: null, slug: '', name_az: 'Yeni kateqoriya', name_en: '', name_ru: '', icon: '📦', sort: _cats.length + 1 });
+    _cats.push({ id: null, slug: '', name: 'Yeni kateqoriya', icon: '📦', sort: _cats.length + 1 });
     renderCategories();
   }
   function removeCategory(idx) {
@@ -1636,7 +1568,7 @@
   async function saveCategories() {
     const items = collectCategories();
     for (const it of items) {
-      if (!it.slug || !it.name_az) { showToast('❌ Hər kateqoriya üçün slug və AZ adı məcburidir', true); return; }
+      if (!it.slug || !it.name) { showToast('❌ Hər kateqoriya üçün slug və ad məcburidir', true); return; }
     }
     try {
       const res = await fetch('/api/categories', {
@@ -1664,7 +1596,7 @@
     }
   }
   function refreshProductCategoryOptions() {
-    const opts = '<option value="">Seçin...</option>' + _cats.map(c => `<option value="${escapeAttr(c.slug)}">${escapeHtml(c.icon)} ${escapeHtml(c.name_az)}</option>`).join('');
+    const opts = '<option value="">Seçin...</option>' + _cats.map(c => `<option value="${escapeAttr(c.slug)}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
     ['fCat', 'eCat'].forEach(id => {
       const sel = document.getElementById(id);
       if (sel) { const cur = sel.value; sel.innerHTML = opts; sel.value = cur; }
@@ -1689,16 +1621,8 @@
         <div class="form-row">
           <div class="form-grp"><label>Ad Soyad</label><input type="text" value="${escapeAttr(t.name || '')}" data-fld="name"></div>
           <div class="form-grp full">
-            <label>Vəzifə / şirkət
-              <span class="lang-tabs" data-lgroup="tPos${i}">
-                <button type="button" class="lang-tab active" data-lgroup="tPos${i}" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-                <button type="button" class="lang-tab" data-lgroup="tPos${i}" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-                <button type="button" class="lang-tab" data-lgroup="tPos${i}" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-              </span>
-            </label>
-            <input type="text" class="lang-input active" data-lgroup="tPos${i}" data-llang="az" data-fld="position" value="${escapeAttr(t.position || '')}">
-            <input type="text" class="lang-input"        data-lgroup="tPos${i}" data-llang="en" data-fld="position_en" value="${escapeAttr(t.position_en || '')}">
-            <input type="text" class="lang-input"        data-lgroup="tPos${i}" data-llang="ru" data-fld="position_ru" value="${escapeAttr(t.position_ru || '')}">
+            <label>Vəzifə / şirkət</label>
+            <input type="text" data-fld="position" value="${escapeAttr(t.position || '')}">
           </div>
           <div class="form-grp full">
             <label>Avatar (klikləyib şəkil yüklə)</label>
@@ -1714,16 +1638,8 @@
             </div>
           </div>
           <div class="form-grp full">
-            <label>Rəy mətni
-              <span class="lang-tabs" data-lgroup="tText${i}">
-                <button type="button" class="lang-tab active" data-lgroup="tText${i}" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
-                <button type="button" class="lang-tab" data-lgroup="tText${i}" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
-                <button type="button" class="lang-tab" data-lgroup="tText${i}" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
-              </span>
-            </label>
-            <textarea class="lang-input active" data-lgroup="tText${i}" data-llang="az" data-fld="text">${escapeHtml(t.text || '')}</textarea>
-            <textarea class="lang-input"        data-lgroup="tText${i}" data-llang="en" data-fld="text_en">${escapeHtml(t.text_en || '')}</textarea>
-            <textarea class="lang-input"        data-lgroup="tText${i}" data-llang="ru" data-fld="text_ru">${escapeHtml(t.text_ru || '')}</textarea>
+            <label>Rəy mətni</label>
+            <textarea data-fld="text">${escapeHtml(t.text || '')}</textarea>
           </div>
           <div class="form-grp"><label>Reytinq (1-5)</label><input type="number" min="1" max="5" value="${t.rating ?? 5}" data-fld="rating"></div>
           <div class="form-grp"><label>Sıra</label><input type="number" value="${t.sort ?? 0}" data-fld="sort"></div>
@@ -1740,12 +1656,8 @@
       return {
         id: _tests[i]?.id ?? null,
         name: get('name'),
-        position:    get('position')    || null,
-        position_en: get('position_en') || null,
-        position_ru: get('position_ru') || null,
-        text:    get('text'),
-        text_en: get('text_en') || null,
-        text_ru: get('text_ru') || null,
+        position: get('position') || null,
+        text: get('text'),
         avatar: get('avatar') || null,
         rating: Math.max(1, Math.min(5, parseInt(get('rating'), 10) || 5)),
         sort: parseInt(get('sort'), 10) || 0,
@@ -2147,7 +2059,12 @@
           <td><span class="cat-badge">${o.service || '-'}</span></td>
           <td><select class="order-status-select" onchange="changeOrderStatus(${realIdx}, this.value)">${statusOpts}</select></td>
           <td style="color:var(--muted);font-size:0.82rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.notes || '-'}</td>
-          <td><button class="del-btn" onclick="openOrderDeleteModal(${realIdx})">🗑️ Sil</button></td>
+          <td>
+            <div class="action-btns">
+              <button class="info-btn" onclick="openOrderDetailModal(${realIdx})">👁️ Daha çox</button>
+              <button class="del-btn" onclick="openOrderDeleteModal(${realIdx})">🗑️ Sil</button>
+            </div>
+          </td>
         </tr>`;
         }).join('')
       : '<tr><td colspan="8"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir sifariş yoxdur</p></div></td></tr>';
@@ -2161,6 +2078,35 @@
     } catch (e) {
       showToast('❌ ' + e.message, true);
     }
+  }
+
+  function openOrderDetailModal(idx) {
+    const o = _ordersCache[idx];
+    if (!o) return;
+    const setText = (id, val) => { document.getElementById(id).textContent = (val === undefined || val === null || val === '') ? '—' : val; };
+    const trackWrap = document.getElementById('orderDetailTrackWrap');
+    if (o.track_code) {
+      trackWrap.style.display = '';
+      document.getElementById('orderDetailTrack').textContent = o.track_code;
+    } else {
+      trackWrap.style.display = 'none';
+    }
+    setText('orderDetailId', o.id ? '#' + o.id : '—');
+    setText('orderDetailName', o.name);
+    const phoneCell = document.getElementById('orderDetailPhone');
+    phoneCell.innerHTML = o.phone ? `<a href="tel:${o.phone.replace(/\s+/g,'')}">${o.phone}</a>` : '—';
+    const emailCell = document.getElementById('orderDetailEmail');
+    emailCell.innerHTML = o.email ? `<a href="mailto:${o.email}">${o.email}</a>` : '—';
+    setText('orderDetailService', o.service);
+    const statusKey = o.status || 'new';
+    const statusLabel = ORDER_STATUSES[statusKey] || statusKey;
+    document.getElementById('orderDetailStatus').innerHTML = `<span class="status-pill-sm ${statusKey}">${statusLabel}</span>`;
+    setText('orderDetailDate', o.date);
+    setText('orderDetailNotes', o.notes);
+    document.getElementById('orderDetailModal').classList.add('open');
+  }
+  function closeOrderDetailModal() {
+    document.getElementById('orderDetailModal').classList.remove('open');
   }
 
   function openOrderDeleteModal(idx) {
@@ -2701,33 +2647,29 @@
 
   // ===== ADD / EDIT PRODUCT =====
   async function saveProduct() {
-    const name    = document.getElementById('fName').value.trim();
-    const name_en = document.getElementById('fNameEn').value.trim() || null;
-    const name_ru = document.getElementById('fNameRu').value.trim() || null;
-    const cat  = document.getElementById('fCat').value;
-    const price= document.getElementById('fPrice').value.trim();
-    const stock= parseInt(document.getElementById('fStock').value, 10) || 0;
-    const emoji= document.getElementById('fEmoji').value.trim() || '📦';
-    const image= document.getElementById('fImage').value.trim() || null;
+    const name  = document.getElementById('fName').value.trim();
+    const cat   = document.getElementById('fCat').value;
+    const price = document.getElementById('fPrice').value.trim();
+    const stock = parseInt(document.getElementById('fStock').value, 10) || 0;
+    const emoji = document.getElementById('fEmoji').value.trim() || '📦';
+    const image = document.getElementById('fImage').value.trim() || null;
     const images = _galleryF.slice();
-    const desc    = document.getElementById('fDesc').value.trim();
-    const desc_en = document.getElementById('fDescEn').value.trim() || null;
-    const desc_ru = document.getElementById('fDescRu').value.trim() || null;
-    const unit = document.getElementById('fUnit').value;
+    const desc  = document.getElementById('fDesc').value.trim();
+    const unit  = document.getElementById('fUnit').value;
     const editId = document.getElementById('editId').value;
 
-    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun (AZ)!', true); return; }
+    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun!', true); return; }
 
     try {
       const products = (await getProducts()).slice();
       if (editId) {
         const idx = products.findIndex(p => p.id == editId);
-        if (idx > -1) { products[idx] = { ...products[idx], name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit }; }
+        if (idx > -1) { products[idx] = { ...products[idx], name, cat, price, stock, emoji, image, images, desc, unit }; }
         await saveProducts(products);
         showToast('✅ Məhsul yeniləndi!');
       } else {
         const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-        products.push({ id: newId, name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit });
+        products.push({ id: newId, name, cat, price, stock, emoji, image, images, desc, unit });
         await saveProducts(products);
         showToast('✅ Məhsul əlavə edildi!');
       }
@@ -2742,22 +2684,13 @@
     const p = products.find(x => String(x.id) === String(id));
     if (!p) return;
     document.getElementById('eId').value = p.id;
-    document.getElementById('eName').value    = p.name || '';
-    document.getElementById('eNameEn').value  = p.name_en || '';
-    document.getElementById('eNameRu').value  = p.name_ru || '';
-    document.getElementById('eCat').value = p.cat || '';
+    document.getElementById('eName').value  = p.name || '';
+    document.getElementById('eCat').value   = p.cat || '';
     document.getElementById('ePrice').value = p.price || '';
     document.getElementById('eStock').value = p.stock ?? 0;
     document.getElementById('eEmoji').value = p.emoji || '';
-    document.getElementById('eDesc').value    = p.desc || '';
-    document.getElementById('eDescEn').value  = p.desc_en || '';
-    document.getElementById('eDescRu').value  = p.desc_ru || '';
-    document.getElementById('eUnit').value = p.unit || 'ədəd';
-    // AZ tab-ı aktiv et
-    document.querySelectorAll('[data-lgroup="eName"] .lang-tab, [data-lgroup="eName"].lang-tab').forEach(t => t.classList.toggle('active', t.dataset.llang === 'az'));
-    document.querySelectorAll('.lang-input[data-lgroup="eName"]').forEach(i => i.classList.toggle('active', i.dataset.llang === 'az'));
-    document.querySelectorAll('[data-lgroup="eDesc"] .lang-tab, [data-lgroup="eDesc"].lang-tab').forEach(t => t.classList.toggle('active', t.dataset.llang === 'az'));
-    document.querySelectorAll('.lang-input[data-lgroup="eDesc"]').forEach(i => i.classList.toggle('active', i.dataset.llang === 'az'));
+    document.getElementById('eDesc').value  = p.desc || '';
+    document.getElementById('eUnit').value  = p.unit || 'ədəd';
     setEditImage(p.image || '');
     _galleryE = Array.isArray(p.images) ? p.images.slice() : [];
     renderGalleryGrid('e');
@@ -2790,25 +2723,21 @@
   function clearEditImage() { setEditImage(''); }
   async function saveEditProduct() {
     const id    = document.getElementById('eId').value;
-    const name     = document.getElementById('eName').value.trim();
-    const name_en  = document.getElementById('eNameEn').value.trim() || null;
-    const name_ru  = document.getElementById('eNameRu').value.trim() || null;
+    const name  = document.getElementById('eName').value.trim();
     const cat   = document.getElementById('eCat').value;
     const price = document.getElementById('ePrice').value.trim();
     const stock = parseInt(document.getElementById('eStock').value, 10) || 0;
     const emoji = document.getElementById('eEmoji').value.trim() || '📦';
     const image = document.getElementById('eImage').value.trim() || null;
     const images = _galleryE.slice();
-    const desc     = document.getElementById('eDesc').value.trim();
-    const desc_en  = document.getElementById('eDescEn').value.trim() || null;
-    const desc_ru  = document.getElementById('eDescRu').value.trim() || null;
+    const desc  = document.getElementById('eDesc').value.trim();
     const unit  = document.getElementById('eUnit').value;
-    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri (AZ) doldurun!', true); return; }
+    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun!', true); return; }
     try {
       const products = (await getProducts()).slice();
       const idx = products.findIndex(p => String(p.id) === String(id));
       if (idx > -1) {
-        products[idx] = { ...products[idx], name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit };
+        products[idx] = { ...products[idx], name, cat, price, stock, emoji, image, images, desc, unit };
         await saveProducts(products);
         showToast('✅ Məhsul yeniləndi!');
       }
@@ -2819,7 +2748,7 @@
     }
   }
   function clearForm() {
-    ['fName','fNameEn','fNameRu','fCat','fPrice','fStock','fEmoji','fDesc','fDescEn','fDescRu','fUnit'].forEach(id => {
+    ['fName','fCat','fPrice','fStock','fEmoji','fDesc','fUnit'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
@@ -2927,54 +2856,6 @@
   // ===== HELPERS =====
   function escapeHtml(s) { return (s ?? '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   function escapeAttr(s) { return (s ?? '').toString().replace(/"/g, '&quot;'); }
-
-  // ===== LANG TABS (multi-language editor) =====
-  // langInputs(cfg): renders a group of 3 language inputs with tab switcher
-  //   cfg = { field, valAz, valEn, valRu, type ('input'|'textarea'), placeholder, maxlength }
-  function langInputs(cfg) {
-    const t = cfg.type === 'textarea' ? 'textarea' : 'input';
-    const attr = cfg.type === 'textarea' ? '' : (cfg.type === 'input' ? 'type="text"' : '');
-    const ml = cfg.maxlength ? `maxlength="${cfg.maxlength}"` : '';
-    const ph = cfg.placeholder ? `placeholder="${escapeAttr(cfg.placeholder)}"` : '';
-    const groupId = 'lg_' + Math.random().toString(36).slice(2, 8);
-    const langs = [
-      { code: 'az', flag: '🇦🇿', val: cfg.valAz || '' },
-      { code: 'en', flag: '🇬🇧', val: cfg.valEn || '' },
-      { code: 'ru', flag: '🇷🇺', val: cfg.valRu || '' },
-    ];
-    const tabs = langs.map((L, i) => `
-      <button type="button" class="lang-tab${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" onclick="switchLangTab(this)"><span class="flag">${L.flag}</span>${L.code.toUpperCase()}</button>
-    `).join('');
-    const inputs = langs.map((L, i) => {
-      if (cfg.type === 'textarea') {
-        return `<textarea class="lang-input${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" data-fld="${escapeAttr(cfg.field)}_${L.code}" ${ph}>${escapeHtml(L.val)}</textarea>`;
-      }
-      return `<input class="lang-input${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" data-fld="${escapeAttr(cfg.field)}_${L.code}" ${attr} ${ml} ${ph} value="${escapeAttr(L.val)}">`;
-    }).join('');
-    return `<div class="lang-tabs" data-lgroup="${groupId}">${tabs}</div>${inputs}`;
-  }
-  function switchLangTab(btn) {
-    const group = btn.dataset.lgroup;
-    const lang = btn.dataset.llang;
-    document.querySelectorAll(`.lang-tab[data-lgroup="${group}"]`).forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll(`.lang-input[data-lgroup="${group}"]`).forEach(i => i.classList.toggle('active', i.dataset.llang === lang));
-  }
-  // Read the 3 values from a container (row): {az, en, ru}
-  function readLangValues(container, field) {
-    return {
-      az: container.querySelector(`[data-fld="${field}_az"]`)?.value ?? '',
-      en: container.querySelector(`[data-fld="${field}_en"]`)?.value ?? '',
-      ru: container.querySelector(`[data-fld="${field}_ru"]`)?.value ?? '',
-    };
-  }
-  // Legacy compat: normalize either string or {az,en,ru} object to a triple
-  function normLang(val) {
-    if (val && typeof val === 'object' && !Array.isArray(val)) {
-      return { az: val.az || '', en: val.en || '', ru: val.ru || '' };
-    }
-    return { az: (val || ''), en: '', ru: '' };
-  }
 
   // Generic confirm modal — promise-based
   function confirmAction({ title = 'Silmək istəyirsiniz?', message = 'Bu əməliyyat geri alına bilməz.', icon = '🗑️', okText = 'Bəli, sil' } = {}) {

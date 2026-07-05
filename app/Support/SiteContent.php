@@ -86,21 +86,17 @@ class SiteContent
             }
         }
         $meta['list'] = Product::orderBy('id')->get()->map(fn ($p) => [
-            'id'      => $p->id,
-            'name'    => $p->name,
-            'name_en' => $p->name_en,
-            'name_ru' => $p->name_ru,
-            'cat'     => $p->cat,
-            'price'   => $p->price,
-            'unit'    => $p->unit,
-            'stock'   => (int) $p->stock,
-            'views'   => (int) $p->views,
-            'emoji'   => $p->emoji,
-            'image'   => $p->image,
-            'images'  => is_array($p->images) ? $p->images : [],
-            'desc'    => $p->desc,
-            'desc_en' => $p->desc_en,
-            'desc_ru' => $p->desc_ru,
+            'id'     => $p->id,
+            'name'   => $p->name,
+            'cat'    => $p->cat,
+            'price'  => $p->price,
+            'unit'   => $p->unit,
+            'stock'  => (int) $p->stock,
+            'views'  => (int) $p->views,
+            'emoji'  => $p->emoji,
+            'image'  => $p->image,
+            'images' => is_array($p->images) ? $p->images : [],
+            'desc'   => $p->desc,
         ])->all();
         return $meta;
     }
@@ -122,19 +118,15 @@ class SiteContent
         $incomingIds = [];
         foreach ($list as $item) {
             $attrs = [
-                'name'    => $item['name']    ?? '',
-                'name_en' => $item['name_en'] ?? null,
-                'name_ru' => $item['name_ru'] ?? null,
-                'cat'     => $item['cat']   ?? '',
-                'price'   => (string)($item['price'] ?? ''),
-                'unit'    => $item['unit']  ?? 'ədəd',
-                'stock'   => (int)($item['stock'] ?? 0),
-                'emoji'   => $item['emoji'] ?? '📦',
-                'image'   => $item['image'] ?? null,
-                'images'  => is_array($item['images'] ?? null) ? array_values(array_filter($item['images'])) : [],
-                'desc'    => $item['desc']    ?? null,
-                'desc_en' => $item['desc_en'] ?? null,
-                'desc_ru' => $item['desc_ru'] ?? null,
+                'name'   => $item['name']  ?? '',
+                'cat'    => $item['cat']   ?? '',
+                'price'  => (string)($item['price'] ?? ''),
+                'unit'   => $item['unit']  ?? 'ədəd',
+                'stock'  => (int)($item['stock'] ?? 0),
+                'emoji'  => $item['emoji'] ?? '📦',
+                'image'  => $item['image'] ?? null,
+                'images' => is_array($item['images'] ?? null) ? array_values(array_filter($item['images'])) : [],
+                'desc'   => $item['desc']  ?? null,
             ];
             if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {
                 Product::where('id', $item['id'])->update($attrs);
