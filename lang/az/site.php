@@ -13,8 +13,8 @@ return [
     'nav.menu'        => 'Menyu',
 
     // Meta
-    'meta.title'       => 'TechnoBey – Kompüter, Printer & Proyektor | Bakı',
-    'meta.description' => 'TechnoBey – Bakıda kompüter satışı, printer və proyektor satışı, təmir və texniki servis xidmətləri. Keyfiyyətli texnologiya məhsulları və peşəkar dəstək.',
+    'meta.title'       => 'Texnobəy – Kompüter, Printer & Proyektor | Bakı',
+    'meta.description' => 'Texnobəy – Bakıda kompüter satışı, printer və proyektor satışı, təmir və texniki servis xidmətləri. Keyfiyyətli texnologiya məhsulları və peşəkar dəstək.',
     'meta.keywords'    => 'kompüter satışı Bakı, printer təmiri Bakı, proyektor satışı, laptop satışı, texniki servis Bakı, kompüter təmiri',
 
     // Hero
@@ -71,8 +71,8 @@ return [
     'contact.email'     => 'E-poçt',
     'contact.whatsapp'  => '💬 WhatsApp-da Yazın',
     'contact.call'      => '📞 Zəng Et',
-    'contact.wa_msg'    => 'Salam, TechnoBey-dən məlumat almaq istəyirəm.',
-    'contact.map_title' => 'TechnoBey ünvanı xəritədə',
+    'contact.wa_msg'    => 'Salam, Texnobəy-dən məlumat almaq istəyirəm.',
+    'contact.map_title' => 'Texnobəy ünvanı xəritədə',
 
     // Footer
     'footer.about'        => 'Bakıda kompüter, printer və proyektor satışı, təmir və texniki servis. 2016-dan bəri güvənilir texnologiya ortağınız.',
@@ -112,5 +112,5 @@ return [
     // Testimonials
     'testimonials.eyebrow' => 'Rəylər',
     'testimonials.title'   => 'Müştərilər bizim haqqımızda',
-    'testimonials.sub'     => 'TechnoBey ilə iş təcrübəsi haqqında məmnun müştərilərin sözləri.',
+    'testimonials.sub'     => 'Texnobəy ilə iş təcrübəsi haqqında məmnun müştərilərin sözləri.',
 ];

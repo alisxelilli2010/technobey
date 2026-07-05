@@ -13,7 +13,7 @@
             <td style="background:linear-gradient(135deg,#0057ff,#00c2ff);padding:28px;color:#ffffff;text-align:center">
               <div style="font-size:38px;line-height:1;margin-bottom:8px">✅</div>
               <div style="font-size:22px;font-weight:800">Sifarişiniz qəbul edildi</div>
-              <div style="font-size:13px;opacity:0.9;margin-top:6px">TechnoBey — texnologiyanız güvənilir əllərdə</div>
+              <div style="font-size:13px;opacity:0.9;margin-top:6px">Texnobəy — texnologiyanız güvənilir əllərdə</div>
             </td>
           </tr>
           <tr>
@@ -66,7 +66,7 @@
           </tr>
           <tr>
             <td style="padding:16px 28px 24px;background:#f8fafc;color:#6b7280;font-size:12px;text-align:center;border-top:1px solid #e4e9f2">
-              TechnoBey — Bakı, Azərbaycan &nbsp;|&nbsp; Bu email avtomatik göndərilib, cavab vermək məcburi deyil.
+              Texnobəy — Bakı, Azərbaycan &nbsp;|&nbsp; Bu email avtomatik göndərilib, cavab vermək məcburi deyil.
             </td>
           </tr>
         </table>

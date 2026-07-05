@@ -12,7 +12,7 @@
           <tr>
             <td style="background:linear-gradient(135deg,#0057ff,#00c2ff);padding:24px 28px;color:#ffffff">
               <div style="font-size:22px;font-weight:800">🔔 Yeni sifariş</div>
-              <div style="font-size:13px;opacity:0.9;margin-top:4px">TechnoBey İdarəetmə paneli</div>
+              <div style="font-size:13px;opacity:0.9;margin-top:4px">Texnobəy İdarəetmə paneli</div>
             </td>
           </tr>
           <tr>
@@ -60,7 +60,7 @@
           </tr>
           <tr>
             <td style="padding:16px 28px 24px;background:#f8fafc;color:#6b7280;font-size:12px;text-align:center;border-top:1px solid #e4e9f2">
-              Bu email TechnoBey admin sistemindən avtomatik göndərilib.
+              Bu email Texnobəy admin sistemindən avtomatik göndərilib.
             </td>
           </tr>
         </table>

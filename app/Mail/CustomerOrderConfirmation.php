@@ -20,7 +20,7 @@ class CustomerOrderConfirmation extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '✅ Sifarişiniz qəbul edildi — TechnoBey',
+            subject: '✅ Sifarişiniz qəbul edildi — Texnobəy',
         );
     }
 

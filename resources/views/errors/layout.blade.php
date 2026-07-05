@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>@yield('title') — TechnoBey</title>
+<title>@yield('title') — Texnobəy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
@@ -69,7 +69,7 @@
   <div class="error-box">
     @yield('content')
     <div class="error-brand">
-      <a href="{{ url('/') }}">💻 TechnoBey</a> — Bakıda №1 texnologiya mağazası
+      <a href="{{ url('/') }}">💻 Texnobəy</a> — Bakıda №1 texnologiya mağazası
     </div>
   </div>
 </div>

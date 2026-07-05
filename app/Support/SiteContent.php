@@ -257,7 +257,7 @@ class SiteContent
             'services' => [
                 'eyebrow' => 'Xidmətlərimiz',
                 'title' => 'Hər Texnoloji Ehtiyacınız<br>Üçün Buradayıq',
-                'sub' => 'Satışdan sonrakı dəstəkdən peşəkar təmirə qədər – TechnoBey ilə texnologiya dünyası əlinizdədir.',
+                'sub' => 'Satışdan sonrakı dəstəkdən peşəkar təmirə qədər – Texnobəy ilə texnologiya dünyası əlinizdədir.',
                 'cards' => [
                     ['icon' => '🔧', 'title' => 'Kompüter Təmiri', 'desc' => 'Laptop, masaüstü, notebook – hər növ kompüterin diaqnostikası, ehtiyat hissəsi dəyişimi və proqram xidmətləri. Eyni gün xidmət seçimi mövcuddur.', 'linkText' => 'Sifariş et →', 'link' => '#order'],
                     ['icon' => '🖨️', 'title' => 'Printer Servis & Kartrij', 'desc' => 'Printer təmiri, kartrij doldurulması, drum dəyişimi. HP, Canon, Epson, Brother – bütün modellər üçün peşəkar xidmət.', 'linkText' => 'Sifariş et →', 'link' => '#order'],
@@ -268,7 +268,7 @@ class SiteContent
                 ],
             ],
             'why' => [
-                'eyebrow' => 'Niyə TechnoBey?',
+                'eyebrow' => 'Niyə Texnobəy?',
                 'title' => 'Bakıda 8 İllik Etibar, Hər Gün Yenilənən Texnologiya',
                 'sub' => '2016-cı ildən bəri Bakıdakı minlərlə müştəriyə texnoloji həllər təqdim edirik. Bizə güvənin, çünki biz yalnız texnologiya satmırıq – işinizin arxasında dayanırıq.',
                 'features' => [
@@ -288,9 +288,9 @@ class SiteContent
             'about' => [
                 'badge1' => '🏆 2016-dan bəri', 'badge2' => '✅ Rəsmi distribütor', 'badge3' => '🇦🇿 Yerli şirkət',
                 'title' => 'Bakının Etibarlı Texnologiya Ortağı',
-                'text' => 'TechnoBey 2016-cı ildə Bakıda kiçik bir texnologiya mağazası kimi fəaliyyətə başladı. Bu gün biz 5,000-dən çox müştəriyə xidmət göstərən tam profilli bir texnologiya şirkətinə çevrilmişik.',
+                'text' => 'Texnobəy 2016-cı ildə Bakıda kiçik bir texnologiya mağazası kimi fəaliyyətə başladı. Bu gün biz 5,000-dən çox müştəriyə xidmət göstərən tam profilli bir texnologiya şirkətinə çevrilmişik.',
                 'btnText' => '📞 Bizimlə tanış olun', 'btnLink' => '#contact',
-                'icon' => '🏪', 'centerName' => 'TechnoBey Servis Mərkəzi',
+                'icon' => '🏪', 'centerName' => 'Texnobəy Servis Mərkəzi',
                 'centerAddr' => 'Nəsimi rayonu, Bakı şəhəri',
                 'met1Num' => '12', 'met1Lbl' => 'Texniki mütəxəssis',
                 'met2Num' => '3', 'met2Lbl' => 'Xidmət sahəsi',
@@ -309,7 +309,7 @@ class SiteContent
             'products' => [
                 'eyebrow' => 'Məhsullar',
                 'title' => 'Premium Texnologiya,<br>Əlverişli Qiymət',
-                'sub' => 'Bakıda kompüter, printer və proyektor satışında ən geniş çeşid TechnoBey-dədir.',
+                'sub' => 'Bakıda kompüter, printer və proyektor satışında ən geniş çeşid Texnobəy-dədir.',
                 'list' => [
                     ['id' => 1, 'name' => 'Gaming PC – Core i7 / RTX 4060', 'cat' => 'komputer', 'price' => '1.850', 'unit' => 'ədəd', 'desc' => '16GB DDR5, 512GB NVMe SSD, Windows 11 Pro', 'emoji' => '🖥️'],
                     ['id' => 2, 'name' => 'Business Laptop – Core i5 / 15.6"', 'cat' => 'komputer', 'price' => '950', 'unit' => 'ədəd', 'desc' => '8GB RAM, 256GB SSD, Full HD IPS ekran', 'emoji' => '💻'],

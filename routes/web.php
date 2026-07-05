@@ -40,9 +40,11 @@ Route::get('/', function (Request $request) use ($sections) {
     return view('home', $data);
 });
 
-Route::get('/admin', function () {
-    return view('admin');
-})->name('admin');
+$adminSections = ['dashboard', 'orders', 'hero', 'trust', 'services', 'why', 'about', 'contact', 'products', 'categories', 'add', 'profile', 'testimonials'];
+Route::get('/admin/{section?}', function (?string $section = null) use ($adminSections) {
+    $active = in_array($section, $adminSections, true) ? $section : 'dashboard';
+    return view('admin', ['activePage' => $active]);
+})->where('section', implode('|', $adminSections))->name('admin');
 
 Route::post('/admin/login', function (Request $request) {
     $data = $request->validate([

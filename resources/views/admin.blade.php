@@ -1,3 +1,20 @@
+@php
+    $activePage = $activePage ?? 'dashboard';
+    $nav = [
+        ['dashboard',    '📊', 'İdarə Paneli'],
+        ['orders',       '📋', 'Sifarişlər'],
+        ['hero',         '🎯', 'Hero'],
+        ['trust',        '🛡️', 'Zəmanətlər'],
+        ['services',     '🛠️', 'Xidmətlər'],
+        ['why',          '⭐', 'Niyə Biz?'],
+        ['about',        'ℹ️', 'Haqqımızda'],
+        ['contact',      '📞', 'Əlaqə'],
+        ['products',     '📦', 'Məhsullar'],
+        ['categories',   '🗂️', 'Kateqoriyalar'],
+        ['add',          '➕', 'Yeni Məhsul'],
+        ['testimonials', '⭐', 'Müştəri Rəyləri'],
+    ];
+@endphp
 <!DOCTYPE html>
 <html lang="az">
 <head>
@@ -5,7 +22,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-<title>TechnoBey – Admin Panel</title>
+<title>Texnobəy – Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
@@ -66,6 +83,7 @@
     display: flex; align-items: center; gap: 10px;
     font-weight: 800; font-size: 1.1rem; color: var(--white);
     padding: 0 24px 28px; border-bottom: 1px solid var(--border);
+    text-decoration: none;
   }
   .sidebar-logo-icon {
     width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--cyan));
@@ -81,6 +99,7 @@
     display: flex; align-items: center; gap: 12px;
     padding: 10px 14px; border-radius: 10px; cursor: pointer;
     color: var(--muted); font-size: 0.85rem; font-weight: 500;
+    text-decoration: none;
     transition: all 0.2s; margin-bottom: 3px;
   }
   .nav-item:hover, .nav-item.active { background: rgba(0,87,255,0.15); color: var(--white); }
@@ -113,6 +132,7 @@
     background: transparent; border: 1px solid var(--border);
     color: var(--text); padding: 8px 16px; border-radius: 100px;
     font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer;
+    text-decoration: none;
     transition: border-color 0.2s, background 0.2s, color 0.2s;
   }
   .topbar-home:hover { border-color: var(--blue); color: var(--white); background: rgba(0,87,255,0.08); }
@@ -132,6 +152,7 @@
     display: flex; align-items: center; gap: 10px;
     background: var(--card-soft); border: 1px solid var(--border);
     border-radius: 100px; padding: 5px 16px 5px 5px; cursor: pointer;
+    text-decoration: none; color: inherit;
     transition: border-color 0.2s, background 0.2s;
   }
   .user-badge:hover { border-color: var(--blue); background: rgba(0,87,255,0.08); }
@@ -498,7 +519,7 @@
 <div class="login-screen" id="loginScreen" style="display:{{ auth()->check() ? 'none' : 'flex' }}">
   <div class="login-box">
     <div style="font-size:2.5rem;margin-bottom:12px">💻</div>
-    <h1>TechnoBey Admin</h1>
+    <h1>Texnobəy Admin</h1>
     <p>İdarəetmə panelinə daxil olmaq üçün məlumatları daxil edin</p>
     <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="username" oninput="document.getElementById('loginErr').style.display='none'">
     <input type="password" id="loginPass" placeholder="Şifrə" autocomplete="current-password" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
@@ -512,54 +533,54 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo" onclick="showPage('dashboard', document.querySelector('[data-page=dashboard]'))" style="cursor:pointer">
+    <a class="sidebar-logo" href="{{ url('/admin/dashboard') }}" style="cursor:pointer;text-decoration:none;color:inherit">
       <div class="sidebar-logo-icon">💻</div>
-      Techno<span>Bey</span>
-    </div>
+      Texno<span>bəy</span>
+    </a>
     <nav class="sidebar-nav">
       <div class="nav-group-label">Ümumi</div>
-      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard', this)">
+      <a class="nav-item {{ $activePage === 'dashboard' ? 'active' : '' }}" data-page="dashboard" href="{{ url('/admin/dashboard') }}">
         <span class="nav-ico">📊</span> İdarə Paneli
-      </div>
-      <div class="nav-item" data-page="orders" onclick="showPage('orders', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'orders' ? 'active' : '' }}" data-page="orders" href="{{ url('/admin/orders') }}">
         <span class="nav-ico">📋</span> Sifarişlər
-      </div>
+      </a>
 
       <div class="nav-group-label">Səhifə Bölmələri</div>
-      <div class="nav-item" data-page="hero" onclick="showPage('hero', this)">
+      <a class="nav-item {{ $activePage === 'hero' ? 'active' : '' }}" data-page="hero" href="{{ url('/admin/hero') }}">
         <span class="nav-ico">🎯</span> Hero
-      </div>
-      <div class="nav-item" data-page="trust" onclick="showPage('trust', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'trust' ? 'active' : '' }}" data-page="trust" href="{{ url('/admin/trust') }}">
         <span class="nav-ico">🛡️</span> Zəmanətlər
-      </div>
-      <div class="nav-item" data-page="services" onclick="showPage('services', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'services' ? 'active' : '' }}" data-page="services" href="{{ url('/admin/services') }}">
         <span class="nav-ico">🛠️</span> Xidmətlər
-      </div>
-      <div class="nav-item" data-page="why" onclick="showPage('why', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'why' ? 'active' : '' }}" data-page="why" href="{{ url('/admin/why') }}">
         <span class="nav-ico">⭐</span> Niyə Biz?
-      </div>
-      <div class="nav-item" data-page="about" onclick="showPage('about', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'about' ? 'active' : '' }}" data-page="about" href="{{ url('/admin/about') }}">
         <span class="nav-ico">ℹ️</span> Haqqımızda
-      </div>
-      <div class="nav-item" data-page="contact" onclick="showPage('contact', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'contact' ? 'active' : '' }}" data-page="contact" href="{{ url('/admin/contact') }}">
         <span class="nav-ico">📞</span> Əlaqə
-      </div>
+      </a>
 
       <div class="nav-group-label">Məhsullar</div>
-      <div class="nav-item" data-page="products" onclick="showPage('products', this)">
+      <a class="nav-item {{ $activePage === 'products' ? 'active' : '' }}" data-page="products" href="{{ url('/admin/products') }}">
         <span class="nav-ico">📦</span> Məhsullar
-      </div>
-      <div class="nav-item" data-page="categories" onclick="showPage('categories', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'categories' ? 'active' : '' }}" data-page="categories" href="{{ url('/admin/categories') }}">
         <span class="nav-ico">🗂️</span> Kateqoriyalar
-      </div>
-      <div class="nav-item" data-page="add" onclick="showPage('add', this)">
+      </a>
+      <a class="nav-item {{ $activePage === 'add' ? 'active' : '' }}" data-page="add" href="{{ url('/admin/add') }}">
         <span class="nav-ico">➕</span> Yeni Məhsul
-      </div>
+      </a>
 
       <div class="nav-group-label">Content</div>
-      <div class="nav-item" data-page="testimonials" onclick="showPage('testimonials', this)">
+      <a class="nav-item {{ $activePage === 'testimonials' ? 'active' : '' }}" data-page="testimonials" href="{{ url('/admin/testimonials') }}">
         <span class="nav-ico">⭐</span> Müştəri Rəyləri
-      </div>
+      </a>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Çıxış</button>
@@ -571,23 +592,23 @@
 
     <!-- TOP NAVBAR -->
     <header class="admin-topbar">
-      <button type="button" class="topbar-home" onclick="showPage('dashboard', document.querySelector('[data-page=dashboard]'))">
+      <a class="topbar-home" href="{{ url('/admin/dashboard') }}" style="text-decoration:none">
         <span class="topbar-home-ico">🏠</span> Əsas səhifə
-      </button>
+      </a>
       <div class="topbar-right">
-        <div class="user-badge" id="userBadge" onclick="showPage('profile', null)" title="Profil">
+        <a class="user-badge" id="userBadge" href="{{ url('/admin/profile') }}" title="Profil" style="text-decoration:none">
           <div class="user-badge-avatar" id="userBadgeAvatar"><span id="userBadgeInitial">?</span></div>
           <div class="user-badge-name" id="userBadgeName">…</div>
-        </div>
+        </a>
       </div>
     </header>
 
     <!-- DASHBOARD -->
-    <div class="page active" id="pageDashboard">
+    <div class="page{{ $activePage === 'dashboard' ? ' active' : '' }}" id="pageDashboard">
       <div class="page-header">
         <div>
           <h2>İdarə Paneli</h2>
-          <p>TechnoBey məhsul idarəetmə sistemi</p>
+          <p>Texnobəy məhsul idarəetmə sistemi</p>
         </div>
       </div>
       <div class="stats-row" id="statsRow"></div>
@@ -636,7 +657,7 @@
     </div>
 
     <!-- ORDERS -->
-    <div class="page" id="pageOrders">
+    <div class="page{{ $activePage === 'orders' ? ' active' : '' }}" id="pageOrders">
       <div class="page-header">
         <div>
           <h2>Gələn Sifarişlər</h2>
@@ -658,7 +679,7 @@
     </div>
 
     <!-- HERO -->
-    <div class="page" id="pageHero">
+    <div class="page{{ $activePage === 'hero' ? ' active' : '' }}" id="pageHero">
       <div class="page-header">
         <div>
           <h2>🎯 Hero Bölməsi</h2>
@@ -741,7 +762,7 @@
     </div>
 
     <!-- TRUST -->
-    <div class="page" id="pageTrust">
+    <div class="page{{ $activePage === 'trust' ? ' active' : '' }}" id="pageTrust">
       <div class="page-header">
         <div>
           <h2>🛡️ Zəmanətlər / Trust Badges</h2>
@@ -763,7 +784,7 @@
     </div>
 
     <!-- SERVICES -->
-    <div class="page" id="pageServices">
+    <div class="page{{ $activePage === 'services' ? ' active' : '' }}" id="pageServices">
       <div class="page-header">
         <div>
           <h2>🛠️ Xidmətlər Bölməsi</h2>
@@ -786,7 +807,7 @@
     </div>
 
     <!-- WHY US -->
-    <div class="page" id="pageWhy">
+    <div class="page{{ $activePage === 'why' ? ' active' : '' }}" id="pageWhy">
       <div class="page-header">
         <div>
           <h2>⭐ Niyə Biz?</h2>
@@ -797,7 +818,7 @@
       <div class="panel">
         <h3>Mətn</h3>
         <div class="form-row">
-          <div class="form-grp"><label>Eyebrow</label><input type="text" id="whyEyebrow" placeholder="Niyə TechnoBey?"></div>
+          <div class="form-grp"><label>Eyebrow</label><input type="text" id="whyEyebrow" placeholder="Niyə Texnobəy?"></div>
           <div class="form-grp full"><label>Başlıq</label><textarea id="whyTitle" placeholder="Bakıda 8 İllik Etibar..."></textarea></div>
           <div class="form-grp full"><label>Alt mətn</label><textarea id="whySub" placeholder="2016-cı ildən bəri..."></textarea></div>
         </div>
@@ -815,7 +836,7 @@
     </div>
 
     <!-- ABOUT -->
-    <div class="page" id="pageAbout">
+    <div class="page{{ $activePage === 'about' ? ' active' : '' }}" id="pageAbout">
       <div class="page-header">
         <div>
           <h2>ℹ️ Haqqımızda</h2>
@@ -831,7 +852,7 @@
           <div class="form-grp"><label>Badge 3</label><input type="text" id="abBadge3" placeholder="🇦🇿 Yerli şirkət"></div>
           <div class="form-grp"></div>
           <div class="form-grp full"><label>Başlıq</label><input type="text" id="abTitle" placeholder="Bakının Etibarlı Texnologiya Ortağı"></div>
-          <div class="form-grp full"><label>Mətn</label><textarea id="abText" placeholder="TechnoBey 2016-cı ildə..."></textarea></div>
+          <div class="form-grp full"><label>Mətn</label><textarea id="abText" placeholder="Texnobəy 2016-cı ildə..."></textarea></div>
           <div class="form-grp"><label>Düymə mətni</label><input type="text" id="abBtnText" placeholder="📞 Bizimlə tanış olun"></div>
           <div class="form-grp"><label>Düymə linki</label><input type="text" id="abBtnLink" placeholder="#contact"></div>
         </div>
@@ -840,7 +861,7 @@
         <h3>Servis Mərkəzi Kartı</h3>
         <div class="form-row">
           <div class="form-grp"><label>İkon emoji</label><input type="text" id="abIcon" placeholder="🏪" maxlength="4"></div>
-          <div class="form-grp"><label>Mərkəz adı</label><input type="text" id="abCenterName" placeholder="TechnoBey Servis Mərkəzi"></div>
+          <div class="form-grp"><label>Mərkəz adı</label><input type="text" id="abCenterName" placeholder="Texnobəy Servis Mərkəzi"></div>
           <div class="form-grp full"><label>Ünvan</label><input type="text" id="abCenterAddr" placeholder="Nəsimi rayonu, Bakı şəhəri"></div>
           <div class="form-grp"><label>Metrika 1 rəqəm</label><input type="text" id="abMet1Num" placeholder="12"></div>
           <div class="form-grp"><label>Metrika 1 etiket</label><input type="text" id="abMet1Lbl" placeholder="Texniki mütəxəssis"></div>
@@ -851,7 +872,7 @@
     </div>
 
     <!-- CONTACT -->
-    <div class="page" id="pageContact">
+    <div class="page{{ $activePage === 'contact' ? ' active' : '' }}" id="pageContact">
       <div class="page-header">
         <div>
           <h2>📞 Əlaqə</h2>
@@ -882,15 +903,15 @@
     </div>
 
     <!-- PRODUCTS LIST -->
-    <div class="page" id="pageProducts">
+    <div class="page{{ $activePage === 'products' ? ' active' : '' }}" id="pageProducts">
       <div class="page-header">
         <div>
           <h2>📦 Məhsullar</h2>
           <p id="productCountLabel">Cəmi 0 məhsul</p>
         </div>
-        <button class="add-btn" onclick="showPage('add', document.querySelector('[data-page=add]'))">
+        <a class="add-btn" href="{{ url('/admin/add') }}" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center">
           ➕ Yeni məhsul
-        </button>
+        </a>
       </div>
       <div class="table-wrap">
         <div class="table-toolbar">
@@ -913,13 +934,13 @@
     </div>
 
     <!-- ADD / EDIT PRODUCT -->
-    <div class="page" id="pageAdd">
+    <div class="page{{ $activePage === 'add' ? ' active' : '' }}" id="pageAdd">
       <div class="page-header">
         <div>
           <h2 id="formTitle">Yeni Məhsul Əlavə Et</h2>
           <p>Məlumatları doldurun və yadda saxlayın</p>
         </div>
-        <button class="ghost-btn" onclick="showPage('products', document.querySelector('[data-page=products]'))">← Geri</button>
+        <a class="ghost-btn" href="{{ url('/admin/products') }}" style="text-decoration:none">← Geri</a>
       </div>
       <div class="panel" style="max-width:620px">
         <input type="hidden" id="editId">
@@ -990,7 +1011,7 @@
     </div>
 
     <!-- PROFILE -->
-    <div class="page" id="pageProfile">
+    <div class="page{{ $activePage === 'profile' ? ' active' : '' }}" id="pageProfile">
       <div class="page-header">
         <div>
           <h2>👤 Profil</h2>
@@ -1051,7 +1072,7 @@
     </div>
 
     <!-- CATEGORIES -->
-    <div class="page" id="pageCategories">
+    <div class="page{{ $activePage === 'categories' ? ' active' : '' }}" id="pageCategories">
       <div class="page-header">
         <div>
           <h2>🗂️ Kateqoriyalar</h2>
@@ -1072,7 +1093,7 @@
     </div>
 
     <!-- TESTIMONIALS -->
-    <div class="page" id="pageTestimonials">
+    <div class="page{{ $activePage === 'testimonials' ? ' active' : '' }}" id="pageTestimonials">
       <div class="page-header">
         <div>
           <h2>⭐ Müştəri Rəyləri</h2>
@@ -1278,19 +1299,50 @@
   // ===== AUTH =====
   const IS_AUTHED = {!! auth()->check() ? 'true' : 'false' !!};
   const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  const ACTIVE_PAGE = @json($activePage);
 
   async function enterAdmin() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'flex';
+    // Server-rendered active page — just kick off its loader.
     // Kateqoriyaları arxa planda yüklə ki, məhsul formasındakı select yenilənsin
     try {
       const res = await fetch('/api/categories', { headers: { 'Accept': 'application/json' } });
       if (res.ok) { _cats = await res.json(); refreshProductCategoryOptions(); }
     } catch {}
-    const hash = (location.hash || '').replace('#', '');
-    const initial = hash && hash !== 'login' && document.getElementById('page' + hash.charAt(0).toUpperCase() + hash.slice(1)) ? hash : 'dashboard';
-    showPage(initial);
+    await initActivePage();
     startDashboardAutoRefresh();
+  }
+
+  async function initActivePage() {
+    const name = ACTIVE_PAGE;
+    try {
+      if (name === 'dashboard') await renderDashboard();
+      else if (name === 'products') await renderProductTable();
+      else if (name === 'add') {
+        document.getElementById('formTitle').textContent = 'Yeni Məhsul Əlavə Et';
+        document.getElementById('editId').value = '';
+        ['fName','fCat','fPrice','fStock','fEmoji','fDesc'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        const unitEl = document.getElementById('fUnit');
+        if (unitEl) unitEl.value = 'ədəd';
+        setProductImage('');
+        _galleryF = [];
+        renderGalleryGrid('f');
+      }
+      else if (name === 'orders') await renderOrders();
+      else if (name === 'hero') await loadHero();
+      else if (name === 'trust') await loadTrust();
+      else if (name === 'services') await loadServices();
+      else if (name === 'why') await loadWhy();
+      else if (name === 'about') await loadAbout();
+      else if (name === 'contact') await loadContact();
+      else if (name === 'profile') await loadProfile();
+      else if (name === 'categories') await loadCategories();
+      else if (name === 'testimonials') await loadTestimonials();
+    } catch (e) {
+      showToast('❌ Server xətası: ' + e.message, true);
+    }
   }
 
   // ===== DASHBOARD AUTO REFRESH =====
@@ -1308,10 +1360,6 @@
   function stopDashboardAutoRefresh() {
     if (_dashRefreshTimer) { clearInterval(_dashRefreshTimer); _dashRefreshTimer = null; }
   }
-  function showLoginHash() {
-    try { history.replaceState(null, '', '#login'); } catch {}
-  }
-
   async function doLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
@@ -1363,8 +1411,6 @@
   if (IS_AUTHED) {
     document.addEventListener('DOMContentLoaded', enterAdmin);
     document.addEventListener('DOMContentLoaded', refreshUserWidget);
-  } else {
-    document.addEventListener('DOMContentLoaded', showLoginHash);
   }
 
   // ===== THEME =====
@@ -1788,52 +1834,9 @@
   // ===== NAV =====
   const VALID_PAGES = ['dashboard','orders','hero','trust','services','why','about','contact','products','add','profile','categories','testimonials'];
 
-  async function showPage(name, el) {
+  function showPage(name) {
     if (!VALID_PAGES.includes(name)) name = 'dashboard';
-    // Əgər artıq başqa bölmədəyiksə və yeni bölməyə keçid baş verirsə → səhifəni tam yenilə
-    const currentHash = (location.hash || '').replace('#', '');
-    if (currentHash && currentHash !== 'login' && currentHash !== name && VALID_PAGES.includes(currentHash)) {
-      location.hash = '#' + name;
-      location.reload();
-      return;
-    }
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const pageEl = document.getElementById('page' + name.charAt(0).toUpperCase() + name.slice(1));
-    if (pageEl) pageEl.classList.add('active');
-    if (!el) el = document.querySelector(`[data-page=${name}]`);
-    if (el) el.classList.add('active');
-    try { history.replaceState(null, '', '#' + name); } catch {}
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    try {
-      if (name === 'dashboard') await renderDashboard();
-      if (name === 'products') await renderProductTable();
-      if (name === 'add') {
-        document.getElementById('formTitle').textContent = 'Yeni Məhsul Əlavə Et';
-        document.getElementById('editId').value = '';
-        ['fName','fNameEn','fNameRu','fCat','fPrice','fStock','fEmoji','fDesc','fDescEn','fDescRu'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.value = '';
-        });
-        const unitEl = document.getElementById('fUnit');
-        if (unitEl) unitEl.value = 'ədəd';
-        setProductImage('');
-        _galleryF = [];
-        renderGalleryGrid('f');
-      }
-      if (name === 'orders') await renderOrders();
-      if (name === 'hero') await loadHero();
-      if (name === 'trust') await loadTrust();
-      if (name === 'services') await loadServices();
-      if (name === 'why') await loadWhy();
-      if (name === 'about') await loadAbout();
-      if (name === 'contact') await loadContact();
-      if (name === 'profile') await loadProfile();
-      if (name === 'categories') await loadCategories();
-      if (name === 'testimonials') await loadTestimonials();
-    } catch (e) {
-      showToast('❌ Server xətası: ' + e.message, true);
-    }
+    window.location.href = '/admin/' + name;
   }
 
   // ===== DASHBOARD =====
@@ -2674,7 +2677,8 @@
         showToast('✅ Məhsul əlavə edildi!');
       }
       clearForm();
-      await showPage('products', document.querySelector('[data-page=products]'));
+      window.location.href = '/admin/products';
+      return;
     } catch (e) {
       showToast('❌ ' + e.message, true);
     }

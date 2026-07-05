@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="az">
 <head>
 <meta charset="UTF-8">
@@ -18,7 +18,7 @@
 <nav class="navbar" id="navbar">
   <a href="#" class="logo" onclick="event.preventDefault(); history.replaceState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: 'smooth' });">
     <div class="logo-icon">💻</div>
-    Techno<span>Bey</span>
+    Texno<span>bəy</span>
   </a>
   <ul class="nav-links">
     <li><a href="#services">{{ __('site.nav.services') }}</a></li>
@@ -464,7 +464,7 @@
       <div class="footer-brand">
         <a href="#" class="logo" onclick="event.preventDefault(); history.replaceState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: 'smooth' });">
           <div class="logo-icon">💻</div>
-          Techno<span>Bey</span>
+          Texno<span>bəy</span>
         </a>
         <p>{{ __('site.footer.about') }}</p>
       </div>
@@ -499,7 +499,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© {{ date('Y') }} <span>TechnoBey.az</span> – {{ __('site.footer.rights') }}</p>
+      <p>© {{ date('Y') }} <span>Texnobəy.az</span> – {{ __('site.footer.rights') }}</p>
       <p>{{ __('site.footer.seo') }}</p>
     </div>
   </div>
@@ -510,7 +510,7 @@
   <a href="https://www.instagram.com/texnobey.az/" target="_blank" rel="noopener" class="float-btn float-ig" title="Instagram" aria-label="Instagram">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.31.975.975 1.247 2.242 1.309 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.31 3.608-.975.975-2.242 1.247-3.608 1.309-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.31-.975-.975-1.247-2.242-1.309-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.31-3.608C4.517 2.567 5.784 2.295 7.15 2.233 8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.155 0-3.507.012-4.744.068-1.006.046-1.556.216-1.92.36-.483.19-.827.418-1.19.78-.362.363-.59.707-.78 1.19-.144.364-.314.914-.36 1.92-.056 1.237-.068 1.589-.068 4.744s.012 3.507.068 4.744c.046 1.006.216 1.556.36 1.92.19.483.418.827.78 1.19.363.362.707.59 1.19.78.364.144.914.314 1.92.36 1.237.056 1.589.068 4.744.068s3.507-.012 4.744-.068c1.006-.046 1.556-.216 1.92-.36.483-.19.827-.418 1.19-.78.362-.363.59-.707.78-1.19.144-.364.314-.914.36-1.92.056-1.237.068-1.589.068-4.744s-.012-3.507-.068-4.744c-.046-1.006-.216-1.556-.36-1.92-.19-.483-.418-.827-.78-1.19-.363-.362-.707-.59-1.19-.78-.364-.144-.914-.314-1.92-.36-1.237-.056-1.589-.068-4.744-.068zM12 6.865a5.135 5.135 0 1 0 0 10.27 5.135 5.135 0 0 0 0-10.27zm0 8.468a3.333 3.333 0 1 1 0-6.666 3.333 3.333 0 0 1 0 6.666zm5.338-9.87a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
   </a>
-  <a href="https://www.facebook.com/p/TexnoBeyaz-61568468586277/" target="_blank" rel="noopener" class="float-btn float-fb" title="Facebook" aria-label="Facebook">
+  <a href="https://www.facebook.com/p/Texnobəyaz-61568468586277/" target="_blank" rel="noopener" class="float-btn float-fb" title="Facebook" aria-label="Facebook">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.35C0 23.407.593 24 1.325 24h11.495v-9.294H9.691v-3.622h3.129V8.413c0-3.1 1.894-4.788 4.66-4.788 1.325 0 2.464.099 2.796.143v3.24h-1.918c-1.504 0-1.796.716-1.796 1.765v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.407 24 22.675V1.325C24 .593 23.407 0 22.675 0z"/></svg>
   </a>
   <a href="https://wa.me/{{ $waRaw }}?text={{ $waMsg }}" target="_blank" rel="noopener" class="float-btn float-wa" title="WhatsApp" aria-label="WhatsApp">
