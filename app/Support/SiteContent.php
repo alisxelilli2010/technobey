@@ -31,10 +31,40 @@ class SiteContent
         if (is_file($path)) {
             $data = json_decode(file_get_contents($path), true);
             if (is_array($data)) {
-                return $data;
+                return self::flattenLegacyLocales($data);
             }
         }
         return self::defaults()[$section] ?? [];
+    }
+
+    /**
+     * Legacy JSON files may store fields as ['az' => ..., 'en' => ..., 'ru' => ...].
+     * Recursively flatten those to plain AZ strings so views can print them directly.
+     */
+    private static function flattenLegacyLocales(array $data): array
+    {
+        $out = [];
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                if (self::isLocaleBag($v)) {
+                    $out[$k] = (string) ($v['az'] ?? '');
+                } else {
+                    $out[$k] = self::flattenLegacyLocales($v);
+                }
+            } else {
+                $out[$k] = $v;
+            }
+        }
+        return $out;
+    }
+
+    private static function isLocaleBag(array $v): bool
+    {
+        if ($v === []) return false;
+        foreach (array_keys($v) as $key) {
+            if (!in_array($key, ['az', 'en', 'ru'], true)) return false;
+        }
+        return array_key_exists('az', $v) || array_key_exists('en', $v) || array_key_exists('ru', $v);
     }
 
     public static function save(string $section, array $data): void
@@ -82,7 +112,7 @@ class SiteContent
         if (is_file($path)) {
             $stored = json_decode(file_get_contents($path), true);
             if (is_array($stored)) {
-                $meta = array_merge($meta, $stored);
+                $meta = array_merge($meta, self::flattenLegacyLocales($stored));
             }
         }
         $meta['list'] = Product::orderBy('id')->get()->map(fn ($p) => [
