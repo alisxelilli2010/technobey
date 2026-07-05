@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="{{ app()->getLocale() }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="TechnoBey – Bakıda kompüter satışı, printer və proyektor satışı, təmir və texniki servis xidmətləri. Keyfiyyətli texnologiya məhsulları və peşəkar dəstək.">
-<meta name="keywords" content="kompüter satışı Bakı, printer təmiri Bakı, proyektor satışı, laptop satışı, texniki servis Bakı, kompüter təmiri">
-<title>TechnoBey – Kompüter, Printer & Proyektor | Bakı</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="description" content="{{ __('site.meta.description') }}">
+<meta name="keywords" content="{{ __('site.meta.keywords') }}">
+<title>{{ __('site.meta.title') }}</title>
+<script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
@@ -19,13 +21,23 @@
     Techno<span>Bey</span>
   </a>
   <ul class="nav-links">
-    <li><a href="#services">Xidmətlər</a></li>
-    <li><a href="#products">Məhsullar</a></li>
-    <li><a href="#about">Haqqımızda</a></li>
-    <li><a href="#contact">Əlaqə</a></li>
-    <li><a href="#order" class="nav-cta">Sifariş et →</a></li>
+    <li><a href="#services">{{ __('site.nav.services') }}</a></li>
+    <li><a href="#products">{{ __('site.nav.products') }}</a></li>
+    <li><a href="#about">{{ __('site.nav.about') }}</a></li>
+    <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
+    <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
+    <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
+    <li class="lang-switcher">
+      <button type="button" class="lang-btn" onclick="toggleLangMenu(event)" title="{{ __('site.nav.language') }}">🌐 {{ strtoupper(app()->getLocale()) }}</button>
+      <div class="lang-menu" id="langMenu">
+        <a href="{{ route('lang.set', 'az') }}?back={{ urlencode(url()->full()) }}">🇦🇿 Azərbaycan</a>
+        <a href="{{ route('lang.set', 'en') }}?back={{ urlencode(url()->full()) }}">🇬🇧 English</a>
+        <a href="{{ route('lang.set', 'ru') }}?back={{ urlencode(url()->full()) }}">🇷🇺 Русский</a>
+      </div>
+    </li>
+    <li><button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}"><span id="themeBtnIco">🌙</span></button></li>
   </ul>
-  <button class="hamburger" id="hamburger" aria-label="Menyu">
+  <button class="hamburger" id="hamburger" aria-label="{{ __('site.nav.menu') }}">
     <span></span><span></span><span></span>
   </button>
 </nav>
@@ -33,50 +45,59 @@
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <button class="mobile-close" id="mobileClose">✕</button>
-  <a href="#services" onclick="closeMobile()">Xidmətlər</a>
-  <a href="#products" onclick="closeMobile()">Məhsullar</a>
-  <a href="#about" onclick="closeMobile()">Haqqımızda</a>
-  <a href="#contact" onclick="closeMobile()">Əlaqə</a>
-  <a href="#order" onclick="closeMobile()" class="btn-primary">Sifariş et →</a>
+  <a href="#services" onclick="closeMobile()">{{ __('site.nav.services') }}</a>
+  <a href="#products" onclick="closeMobile()">{{ __('site.nav.products') }}</a>
+  <a href="#about" onclick="closeMobile()">{{ __('site.nav.about') }}</a>
+  <a href="#contact" onclick="closeMobile()">{{ __('site.nav.contact') }}</a>
+  <a href="{{ route('order.status') }}" onclick="closeMobile()">{{ __('site.nav.track') }}</a>
+  <a href="#order" onclick="closeMobile()" class="btn-primary">{{ __('site.nav.order') }}</a>
+  <button type="button" class="theme-btn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" style="margin-top:8px"><span id="themeBtnIcoMobile">🌙</span></button>
 </div>
 
 <!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-grid">
     <div>
-      <div class="hero-badge">{{ $hero['badge'] ?? '' }}</div>
-      <h1>{!! $hero['title'] ?? '' !!}</h1>
-      <p>{{ $hero['sub'] ?? '' }}</p>
+      <div class="hero-badge">{{ l($hero['badge'] ?? '') }}</div>
+      <h1>{!! l($hero['title'] ?? '') !!}</h1>
+      <p>{{ l($hero['sub'] ?? '') }}</p>
       <div class="hero-actions">
-        <a href="{{ $hero['btn1Link'] ?? '#' }}" class="btn-primary">{{ $hero['btn1Text'] ?? '' }}</a>
-        <a href="{{ $hero['btn2Link'] ?? '#' }}" class="btn-secondary">{{ $hero['btn2Text'] ?? '' }}</a>
+        <a href="{{ $hero['btn1Link'] ?? '#' }}" class="btn-primary">{{ l($hero['btn1Text'] ?? '') }}</a>
+        <a href="{{ $hero['btn2Link'] ?? '#' }}" class="btn-secondary">{{ l($hero['btn2Text'] ?? '') }}</a>
       </div>
-      <div class="hero-stats">
+      <div class="hero-stats reveal-stagger">
         @foreach (($hero['stats'] ?? []) as $stat)
+        @php
+          $numRaw = $stat['num'] ?? '';
+          preg_match('/([0-9.]+)/u', $numRaw, $m1);
+          $numDigits = $m1[1] ?? '';
+          preg_match('/([^0-9A-Za-z]+)$/u', $numRaw, $m2);
+          $numSuffix = $m2[1] ?? '';
+        @endphp
         <div class="stat-item">
-          <div class="stat-num">{{ preg_replace('/[^0-9A-Za-z]+$/u', '', $stat['num'] ?? '') }}<span>{{ preg_match('/([^0-9A-Za-z]+)$/u', $stat['num'] ?? '', $m) ? $m[1] : '' }}</span></div>
-          <div class="stat-label">{{ $stat['label'] ?? '' }}</div>
+          <div class="stat-num"><span data-counter data-target="{{ $numDigits }}">0</span><span>{{ $numSuffix }}</span></div>
+          <div class="stat-label">{{ l($stat['label'] ?? '') }}</div>
         </div>
         @endforeach
       </div>
     </div>
-    <div class="hero-visual">
+    <div class="hero-visual reveal-stagger">
       @foreach (($hero['devices'] ?? []) as $idx => $dev)
       <div class="device-card{{ $idx === 0 ? ' featured' : '' }}">
         @if (!empty($dev['image']))
-          <div class="device-img"><img src="{{ $dev['image'] }}" alt="{{ $dev['title'] ?? '' }}" loading="lazy"></div>
+          <div class="device-img"><img src="{{ $dev['image'] }}" alt="{{ l($dev['title'] ?? '') }}" loading="lazy"></div>
         @else
           <div class="device-icon">{{ $dev['emoji'] ?? '' }}</div>
         @endif
         @if ($idx === 0)
         <div>
-          <div class="device-tag">Ən çox satılan</div>
-          <h3>{{ $dev['title'] ?? '' }}</h3>
-          <p>{{ $dev['desc'] ?? '' }}</p>
+          <div class="device-tag">{{ __('site.hero.bestseller') }}</div>
+          <h3>{{ l($dev['title'] ?? '') }}</h3>
+          <p>{{ l($dev['desc'] ?? '') }}</p>
         </div>
         @else
-        <h3>{{ $dev['title'] ?? '' }}</h3>
-        <p>{{ $dev['desc'] ?? '' }}</p>
+        <h3>{{ l($dev['title'] ?? '') }}</h3>
+        <p>{{ l($dev['desc'] ?? '') }}</p>
         @endif
       </div>
       @endforeach
@@ -84,25 +105,44 @@
   </div>
 </section>
 
+<!-- TRUST BADGES -->
+@if (!empty($trust['enabled']) && !empty($trust['cards']))
+<section class="trust-strip" id="trust">
+  <div class="container">
+    <div class="trust-grid reveal-stagger">
+      @foreach ($trust['cards'] as $card)
+      <div class="trust-card">
+        <div class="trust-icon">{{ $card['icon'] ?? '✅' }}</div>
+        <div class="trust-body">
+          <h4>{{ l($card['title'] ?? '') }}</h4>
+          <p>{{ l($card['desc'] ?? '') }}</p>
+        </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
 <!-- SERVICES -->
 <section class="section services" id="services">
   <div class="container">
-    <div class="section-header">
-      <div class="eyebrow">{{ $services['eyebrow'] ?? '' }}</div>
-      <h2 class="section-title">{!! $services['title'] ?? '' !!}</h2>
-      <p class="section-sub">{{ $services['sub'] ?? '' }}</p>
+    <div class="section-header reveal-up">
+      <div class="eyebrow">{{ l($services['eyebrow'] ?? '') }}</div>
+      <h2 class="section-title">{!! l($services['title'] ?? '') !!}</h2>
+      <p class="section-sub">{{ l($services['sub'] ?? '') }}</p>
     </div>
-    <div class="services-grid">
+    <div class="services-grid reveal-stagger">
       @foreach (($services['cards'] ?? []) as $card)
       <div class="service-card">
         @if (!empty($card['image']))
-          <div class="service-img"><img src="{{ $card['image'] }}" alt="{{ $card['title'] ?? '' }}" loading="lazy"></div>
+          <div class="service-img"><img src="{{ $card['image'] }}" alt="{{ l($card['title'] ?? '') }}" loading="lazy"></div>
         @else
           <div class="service-ico">{{ $card['icon'] ?? '' }}</div>
         @endif
-        <h3>{{ $card['title'] ?? '' }}</h3>
-        <p>{{ $card['desc'] ?? '' }}</p>
-        <a href="{{ $card['link'] ?? '#' }}" class="service-link">{{ $card['linkText'] ?? '' }}</a>
+        <h3>{{ l($card['title'] ?? '') }}</h3>
+        <p>{{ l($card['desc'] ?? '') }}</p>
+        <a href="{{ $card['link'] ?? '#' }}" class="service-link">{{ l($card['linkText'] ?? '') }}</a>
       </div>
       @endforeach
     </div>
@@ -112,37 +152,90 @@
 <!-- PRODUCTS -->
 <section class="section products" id="products">
   <div class="container">
-    <div class="section-header">
-      <div class="eyebrow">{{ $products['eyebrow'] ?? 'Məhsullar' }}</div>
-      <h2 class="section-title">{!! $products['title'] ?? '' !!}</h2>
-      <p class="section-sub">{{ $products['sub'] ?? '' }}</p>
+    <div class="section-header reveal-up">
+      <div class="eyebrow">{{ l($products['eyebrow'] ?? '') ?: __('site.nav.products') }}</div>
+      <h2 class="section-title">{!! l($products['title'] ?? '') !!}</h2>
+      <p class="section-sub">{{ l($products['sub'] ?? '') }}</p>
     </div>
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterProducts('all', this)">Hamısı</button>
-      <button class="filter-btn" onclick="filterProducts('komputer', this)">💻 Kompüterlər</button>
-      <button class="filter-btn" onclick="filterProducts('printer', this)">🖨️ Printerlər</button>
-      <button class="filter-btn" onclick="filterProducts('proyektor', this)">📽️ Proyektorlar</button>
-      <button class="filter-btn" onclick="filterProducts('aksesuar', this)">🖱️ Aksesuarlar</button>
+    <div class="product-toolbar">
+      <input type="text" class="search-input" id="productSearch" placeholder="{{ __('site.filter.search') }}" oninput="filterProducts()">
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-cat="all" onclick="setCatFilter('all', this)">{{ __('site.filter.all') }}</button>
+        @foreach ($categories as $c)
+          <button class="filter-btn" data-cat="{{ $c->slug }}" onclick="setCatFilter('{{ $c->slug }}', this)">{{ $c->icon }} {{ $c->localizedName(app()->getLocale()) }}</button>
+        @endforeach
+      </div>
     </div>
     @php
-      $catNames = ['komputer' => 'Kompüter', 'printer' => 'Printer', 'proyektor' => 'Proyektor', 'aksesuar' => 'Aksesuar'];
+      $locale = app()->getLocale();
+      $catNames = [];
+      foreach ($categories as $c) $catNames[$c->slug] = $c->localizedName($locale);
+      $unitMap = [
+        'ədəd' => __('site.unit.piece'),
+        'dəst' => __('site.unit.set'),
+        'ay'   => __('site.unit.month'),
+      ];
     @endphp
-    <div class="products-grid" id="productsGrid">
+    <div class="products-empty" id="productsEmpty" style="display:none">🔍 {{ __('site.filter.no_results') }}</div>
+    <div class="products-grid reveal-stagger" id="productsGrid">
       @foreach (($products['list'] ?? []) as $p)
-      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}">
-        @if (!empty($p['image']))
-          <div class="product-img product-img-photo"><img src="{{ $p['image'] }}" alt="{{ $p['name'] ?? '' }}" loading="lazy"></div>
-        @else
-          <div class="product-img">{{ $p['emoji'] ?? '📦' }}</div>
-        @endif
+      @php
+        $gallery = array_values(array_filter($p['images'] ?? []));
+        if (!empty($p['image']) && !in_array($p['image'], $gallery, true)) array_unshift($gallery, $p['image']);
+        $stock = (int)($p['stock'] ?? 0);
+        $pName = $locale === 'en' && !empty($p['name_en']) ? $p['name_en']
+               : ($locale === 'ru' && !empty($p['name_ru']) ? $p['name_ru'] : ($p['name'] ?? ''));
+        $pDesc = $locale === 'en' && !empty($p['desc_en']) ? $p['desc_en']
+               : ($locale === 'ru' && !empty($p['desc_ru']) ? $p['desc_ru'] : ($p['desc'] ?? ''));
+        $searchBlob = mb_strtolower(
+          ($p['name'] ?? '') . ' ' . ($p['name_en'] ?? '') . ' ' . ($p['name_ru'] ?? '') . ' ' .
+          ($p['desc'] ?? '') . ' ' . ($p['desc_en'] ?? '') . ' ' . ($p['desc_ru'] ?? '') . ' ' .
+          ($catNames[$p['cat'] ?? ''] ?? '')
+        );
+      @endphp
+      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}" data-search="{{ $searchBlob }}" data-product-id="{{ $p['id'] ?? 0 }}">
+        <div class="product-img-wrap">
+          @if (!empty($gallery))
+            <div class="product-gallery">
+              @foreach ($gallery as $i => $imgUrl)
+                <img src="{{ $imgUrl }}" alt="{{ $p['name'] ?? '' }}" loading="lazy" class="product-gallery-img{{ $i === 0 ? ' active' : '' }}" data-idx="{{ $i }}">
+              @endforeach
+            </div>
+            @if (count($gallery) > 1)
+            <div class="product-gallery-dots">
+              @foreach ($gallery as $i => $imgUrl)
+                <button type="button" class="gallery-dot{{ $i === 0 ? ' active' : '' }}" onclick="galleryTo(this, {{ $i }})" aria-label="Şəkil {{ $i + 1 }}"></button>
+              @endforeach
+            </div>
+            @endif
+          @else
+            <div class="product-img">{{ $p['emoji'] ?? '📦' }}</div>
+          @endif
+          @if ($stock <= 0)
+            <div class="stock-badge stock-out">{{ __('site.stock.out') }}</div>
+          @elseif ($stock <= 3)
+            <div class="stock-badge stock-low">{{ __('site.stock.low', ['n' => $stock]) }}</div>
+          @else
+            <div class="stock-badge stock-in">{{ __('site.stock.in_stock') }}</div>
+          @endif
+        </div>
         <div class="product-body">
-          <div class="product-cat">{{ $catNames[$p['cat'] ?? ''] ?? ucfirst($p['cat'] ?? '') }}</div>
-          <h3>{{ $p['name'] ?? '' }}</h3>
-          <p>{{ $p['desc'] ?? '' }}</p>
+          <div class="product-meta-row">
+            <div class="product-cat">{{ $catNames[$p['cat'] ?? ''] ?? ucfirst($p['cat'] ?? '') }}</div>
+            @if (($p['views'] ?? 0) >= 20)
+              <div class="product-views" title="{{ __('site.views.title') }}">👁️ {{ number_format($p['views'], 0, '.', ' ') }}</div>
+            @endif
+          </div>
+          <h3>{{ $pName }}</h3>
+          <p>{{ $pDesc }}</p>
           <div class="product-footer">
-            <div class="price">{{ $p['price'] ?? '' }} ₼ <span>/ {{ $p['unit'] ?? 'ədəd' }}</span></div>
-            <a href="#order" class="btn-order"
-               onclick="selectProduct(this, '{{ addslashes($p['name'] ?? '') }}', '{{ $p['cat'] ?? '' }}', '{{ $p['price'] ?? '' }}', '{{ $p['unit'] ?? 'ədəd' }}')">Sifariş et</a>
+            <div class="price">{{ $p['price'] ?? '' }} ₼ <span>/ {{ $unitMap[$p['unit'] ?? 'ədəd'] ?? ($p['unit'] ?? '') }}</span></div>
+            @if ($stock <= 0)
+              <button class="btn-order btn-order-disabled" disabled>{{ __('site.stock.out') }}</button>
+            @else
+              <a href="#order" class="btn-order"
+                 onclick="selectProduct(this, '{{ addslashes($pName) }}', '{{ $p['cat'] ?? '' }}', '{{ $p['price'] ?? '' }}', '{{ $p['unit'] ?? 'ədəd' }}')">{{ __('site.nav.order') }}</a>
+            @endif
           </div>
         </div>
       </div>
@@ -156,26 +249,30 @@
   <div class="container">
     <div class="why-grid">
       <div class="why-text">
-        <div class="eyebrow">{{ $why['eyebrow'] ?? '' }}</div>
-        <h2>{!! $why['title'] ?? '' !!}</h2>
-        <p>{{ $why['sub'] ?? '' }}</p>
-        <div class="why-features">
+        <div class="eyebrow">{{ l($why['eyebrow'] ?? '') }}</div>
+        <h2>{!! l($why['title'] ?? '') !!}</h2>
+        <p>{{ l($why['sub'] ?? '') }}</p>
+        <div class="why-features reveal-stagger">
           @foreach (($why['features'] ?? []) as $feat)
           <div class="why-feature">
             <div class="feature-icon">{{ $feat['icon'] ?? '' }}</div>
             <div class="feature-txt">
-              <h4>{{ $feat['title'] ?? '' }}</h4>
-              <p>{{ $feat['desc'] ?? '' }}</p>
+              <h4>{{ l($feat['title'] ?? '') }}</h4>
+              <p>{{ l($feat['desc'] ?? '') }}</p>
             </div>
           </div>
           @endforeach
         </div>
       </div>
-      <div class="why-visual">
+      <div class="why-visual reveal-stagger">
         @foreach (($why['metrics'] ?? []) as $idx => $met)
+        @php
+          preg_match('/([0-9.]+)/u', $met['num'] ?? '', $mm);
+          $metDigits = $mm[1] ?? '';
+        @endphp
         <div class="metric-card{{ ($idx === count($why['metrics'] ?? []) - 1 && count($why['metrics'] ?? []) % 2 === 1) ? ' wide' : '' }}">
-          <div class="big">{{ $met['num'] ?? '' }}<span>{{ $met['suffix'] ?? '' }}</span></div>
-          <small>{{ $met['label'] ?? '' }}</small>
+          <div class="big"><span data-counter data-target="{{ $metDigits }}">0</span><span>{{ $met['suffix'] ?? '' }}</span></div>
+          <small>{{ l($met['label'] ?? '') }}</small>
         </div>
         @endforeach
       </div>
@@ -186,47 +283,47 @@
 <!-- ORDER FORM -->
 <section class="section order-section" id="order">
   <div class="container">
-    <div class="section-header">
-      <div class="eyebrow">Onlayn Sifariş</div>
-      <h2 class="section-title">Sifarişinizi Göndərin</h2>
-      <p class="section-sub">Formu doldurun, 30 dəqiqə ərzində sizinlə əlaqə saxlayaq.</p>
+    <div class="section-header reveal-up">
+      <div class="eyebrow">{{ __('site.order.eyebrow') }}</div>
+      <h2 class="section-title">{{ __('site.order.title') }}</h2>
+      <p class="section-sub">{{ __('site.order.sub') }}</p>
     </div>
     <div class="order-wrap">
-      <form class="form-grid" id="orderForm" action="{{ url('/order') }}" method="POST" onsubmit="event.preventDefault(); handleSubmit();">
+      <form class="form-grid" id="orderForm" action="{{ url('/order') }}" method="POST" onsubmit="event.preventDefault(); handleSubmit();" data-product-label="{{ __('site.order.product_prefix') }}">
         @csrf
         <div class="form-group">
-          <label>Adınız *</label>
-          <input type="text" name="name" placeholder="Texnobey" required>
+          <label>{{ __('site.order.name') }}</label>
+          <input type="text" name="name" placeholder="{{ __('site.order.name_ph') }}" required>
         </div>
         <div class="form-group">
-          <label>Telefon nömrəsi *</label>
-          <input type="tel" name="phone" placeholder="+994 50 XXX XX XX" required>
+          <label>{{ __('site.order.phone') }}</label>
+          <input type="tel" name="phone" placeholder="{{ __('site.order.phone_ph') }}" required>
         </div>
         <div class="form-group">
-          <label>E-poçt</label>
-          <input type="email" name="email" placeholder="email@example.com">
+          <label>{{ __('site.order.email') }}</label>
+          <input type="email" name="email" placeholder="{{ __('site.order.email_ph') }}">
         </div>
         <div class="form-group">
-          <label>Xidmət növü *</label>
+          <label>{{ __('site.order.service') }}</label>
           <select name="service" required>
-            <option value="">Seçin...</option>
-            <option>Kompüter alışı</option>
-            <option>Printer alışı</option>
-            <option>Proyektor alışı</option>
-            <option>Kompüter təmiri</option>
-            <option>Printer servis / kartrij</option>
-            <option>Texniki konsultasiya</option>
-            <option>Korporativ təchizat</option>
-            <option>Digər</option>
+            <option value="">{{ __('site.order.select') }}</option>
+            <option value="Kompüter alışı">{{ __('site.order.service.computer_buy') }}</option>
+            <option value="Printer alışı">{{ __('site.order.service.printer_buy') }}</option>
+            <option value="Proyektor alışı">{{ __('site.order.service.projector_buy') }}</option>
+            <option value="Kompüter təmiri">{{ __('site.order.service.computer_fix') }}</option>
+            <option value="Printer servis / kartrij">{{ __('site.order.service.printer_svc') }}</option>
+            <option value="Texniki konsultasiya">{{ __('site.order.service.consult') }}</option>
+            <option value="Korporativ təchizat">{{ __('site.order.service.corporate') }}</option>
+            <option value="Digər">{{ __('site.order.service.other') }}</option>
           </select>
         </div>
         <div class="form-group full">
-          <label>Əlavə qeydlər</label>
-          <textarea name="notes" placeholder="Məhsul haqqında əlavə məlumat, büdcə, xüsusi tələblər..."></textarea>
+          <label>{{ __('site.order.notes') }}</label>
+          <textarea name="notes" placeholder="{{ __('site.order.notes_ph') }}"></textarea>
         </div>
         <div class="form-group full">
-          <button type="submit" class="submit-btn">🚀 Sifarişi Göndər</button>
-          <p class="form-note">🔒 Məlumatlarınız tamamilə gizlidir. Spam göndərmirk.</p>
+          <button type="submit" class="submit-btn" data-label-idle="{{ __('site.order.submit') }}" data-label-sending="{{ __('site.order.sending') }}" data-label-ok="{{ __('site.order.success') }}" data-label-err="{{ __('site.order.error') }}">{{ __('site.order.submit') }}</button>
+          <p class="form-note">{{ __('site.order.privacy') }}</p>
         </div>
       </form>
     </div>
@@ -236,81 +333,130 @@
 <!-- ABOUT -->
 <section class="section about" id="about">
   <div class="container">
-    <div class="about-grid">
+    <div class="about-grid reveal-up">
       <div class="about-text">
         <div class="about-badges">
-          <span class="badge">{{ $about['badge1'] ?? '' }}</span>
-          <span class="badge">{{ $about['badge2'] ?? '' }}</span>
-          <span class="badge">{{ $about['badge3'] ?? '' }}</span>
+          <span class="badge">{{ l($about['badge1'] ?? '') }}</span>
+          <span class="badge">{{ l($about['badge2'] ?? '') }}</span>
+          <span class="badge">{{ l($about['badge3'] ?? '') }}</span>
         </div>
-        <h2>{{ $about['title'] ?? '' }}</h2>
-        <p>{{ $about['text'] ?? '' }}</p>
+        <h2>{{ l($about['title'] ?? '') }}</h2>
+        <p>{{ l($about['text'] ?? '') }}</p>
 
-        <a href="{{ $about['btnLink'] ?? '#' }}" class="btn-primary" style="display:inline-flex">{{ $about['btnText'] ?? '' }}</a>
+        <a href="{{ $about['btnLink'] ?? '#' }}" class="btn-primary" style="display:inline-flex">{{ l($about['btnText'] ?? '') }}</a>
       </div>
       <div class="about-img-wrap">
         <div class="about-icon">{{ $about['icon'] ?? '🏪' }}</div>
-        <h3>{{ $about['centerName'] ?? '' }}</h3>
-        <p>{{ $about['centerAddr'] ?? '' }}</p>
+        <h3>{{ l($about['centerName'] ?? '') }}</h3>
+        <p>{{ l($about['centerAddr'] ?? '') }}</p>
         <br>
+        @php
+          preg_match('/([0-9.]+)/u', $about['met1Num'] ?? '', $am1);
+          preg_match('/([0-9.]+)/u', $about['met2Num'] ?? '', $am2);
+          $am1d = $am1[1] ?? ''; $am2d = $am2[1] ?? '';
+          $am1s = trim(str_replace($am1d, '', $about['met1Num'] ?? ''));
+          $am2s = trim(str_replace($am2d, '', $about['met2Num'] ?? ''));
+        @endphp
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%">
-          <div class="metric-card"><div class="big">{{ $about['met1Num'] ?? '' }}</div><small>{{ $about['met1Lbl'] ?? '' }}</small></div>
-          <div class="metric-card"><div class="big">{{ $about['met2Num'] ?? '' }}</div><small>{{ $about['met2Lbl'] ?? '' }}</small></div>
+          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am1d }}">0</span>{{ $am1s }}</div><small>{{ l($about['met1Lbl'] ?? '') }}</small></div>
+          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am2d }}">0</span>{{ $am2s }}</div><small>{{ l($about['met2Lbl'] ?? '') }}</small></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- TESTIMONIALS -->
+@if (($testimonials ?? collect())->isNotEmpty())
+<section class="section testimonials" id="testimonials">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <div class="eyebrow">{{ __('site.testimonials.eyebrow') }}</div>
+      <h2 class="section-title">{{ __('site.testimonials.title') }}</h2>
+      <p class="section-sub">{{ __('site.testimonials.sub') }}</p>
+    </div>
+    <div class="testimonials-grid reveal-stagger">
+      @foreach ($testimonials as $t)
+      @php
+        $tText = l_from_db($t, 'text');
+        $tPos  = l_from_db($t, 'position');
+      @endphp
+      <div class="testimonial-card">
+        <div class="testimonial-stars">
+          @for ($i = 0; $i < 5; $i++)
+            <span class="star{{ $i < $t->rating ? ' filled' : '' }}">★</span>
+          @endfor
+        </div>
+        <p class="testimonial-text">"{{ $tText }}"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">
+            @if ($t->avatar)
+              <img src="{{ $t->avatar }}" alt="{{ $t->name }}" loading="lazy">
+            @else
+              <span>{{ mb_substr($t->name, 0, 1) }}</span>
+            @endif
+          </div>
+          <div>
+            <div class="testimonial-name">{{ $t->name }}</div>
+            @if ($tPos)<div class="testimonial-pos">{{ $tPos }}</div>@endif
+          </div>
+        </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
 <!-- CONTACT -->
 @php
   $phoneRaw = preg_replace('/[^0-9+]/', '', $contact['phone'] ?? '');
   $waRaw = preg_replace('/[^0-9]/', '', $contact['whatsapp'] ?? '');
-  $waMsg = rawurlencode('Salam, TechnoBey-dən məlumat almaq istəyirəm.');
+  $waMsg = rawurlencode(__('site.contact.wa_msg'));
 @endphp
 <section class="section contact" id="contact">
   <div class="container">
-    <div class="section-header">
-      <div class="eyebrow">{{ $contact['eyebrow'] ?? '' }}</div>
-      <h2 class="section-title">{{ $contact['title'] ?? '' }}</h2>
-      <p class="section-sub">{{ $contact['sub'] ?? '' }}</p>
+    <div class="section-header reveal-up">
+      <div class="eyebrow">{{ l($contact['eyebrow'] ?? '') }}</div>
+      <h2 class="section-title">{{ l($contact['title'] ?? '') }}</h2>
+      <p class="section-sub">{{ l($contact['sub'] ?? '') }}</p>
     </div>
-    <div class="contact-grid">
+    <div class="contact-grid reveal-up">
       <div class="contact-info">
         <div class="contact-card">
           <div class="contact-ico">📍</div>
           <div>
-            <h4>Ünvan</h4>
-            <p>{{ $contact['addr'] ?? '' }}<br><small style="color:var(--muted)">{{ $contact['addrNote'] ?? '' }}</small></p>
+            <h4>{{ __('site.contact.address') }}</h4>
+            <p>{{ l($contact['addr'] ?? '') }}<br><small style="color:var(--muted)">{{ l($contact['addrNote'] ?? '') }}</small></p>
           </div>
         </div>
         <div class="contact-card">
           <div class="contact-ico">📞</div>
           <div>
-            <h4>Telefon</h4>
+            <h4>{{ __('site.contact.phone') }}</h4>
             <a href="tel:{{ $phoneRaw }}">{{ $contact['phone'] ?? '' }}</a>
           </div>
         </div>
         <div class="contact-card">
           <div class="contact-ico">🕐</div>
           <div>
-            <h4>İş saatları</h4>
+            <h4>{{ __('site.contact.hours') }}</h4>
             <p>{!! nl2br(e($contact['hours'] ?? '')) !!}</p>
           </div>
         </div>
         <div class="contact-card">
           <div class="contact-ico">✉️</div>
           <div>
-            <h4>E-poçt</h4>
+            <h4>{{ __('site.contact.email') }}</h4>
             <a href="mailto:{{ $contact['email'] ?? '' }}">{{ $contact['email'] ?? '' }}</a>
           </div>
         </div>
         <div class="contact-actions">
           <a href="https://wa.me/{{ $waRaw }}?text={{ $waMsg }}" class="whatsapp-btn" target="_blank">
-            💬 WhatsApp-da Yazın
+            {{ __('site.contact.whatsapp') }}
           </a>
           <a href="tel:{{ $phoneRaw }}" class="call-btn">
-            📞 Zəng Et
+            {{ __('site.contact.call') }}
           </a>
         </div>
       </div>
@@ -318,7 +464,7 @@
         <iframe
           src="{{ $contact['mapSrc'] ?? '' }}"
           allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          title="TechnoBey ünvanı xəritədə">
+          title="{{ __('site.contact.map_title') }}">
         </iframe>
       </div>
     </div>
@@ -334,41 +480,41 @@
           <div class="logo-icon">💻</div>
           Techno<span>Bey</span>
         </a>
-        <p>Bakıda kompüter, printer və proyektor satışı, təmir və texniki servis. 2016-dan bəri güvənilir texnologiya ortağınız.</p>
+        <p>{{ __('site.footer.about') }}</p>
       </div>
       <div class="footer-col">
-        <h4>Xidmətlər</h4>
+        <h4>{{ __('site.footer.services') }}</h4>
         <ul>
-          <li><a href="#services">Kompüter Təmiri</a></li>
-          <li><a href="#services">Printer Servis</a></li>
-          <li><a href="#services">Proyektor Quraşdırma</a></li>
-          <li><a href="#services">Konsultasiya</a></li>
-          <li><a href="#services">Korporativ Həllər</a></li>
+          <li><a href="#services">{{ __('site.footer.svc.computer') }}</a></li>
+          <li><a href="#services">{{ __('site.footer.svc.printer') }}</a></li>
+          <li><a href="#services">{{ __('site.footer.svc.projector') }}</a></li>
+          <li><a href="#services">{{ __('site.footer.svc.consult') }}</a></li>
+          <li><a href="#services">{{ __('site.footer.svc.corp') }}</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Məhsullar</h4>
+        <h4>{{ __('site.footer.products') }}</h4>
         <ul>
-          <li><a href="#products">Masaüstü PC</a></li>
-          <li><a href="#products">Laptoplar</a></li>
-          <li><a href="#products">Printerlər</a></li>
-          <li><a href="#products">Proyektorlar</a></li>
-          <li><a href="#products">Aksesuarlar</a></li>
+          <li><a href="#products">{{ __('site.footer.prod.desktop') }}</a></li>
+          <li><a href="#products">{{ __('site.footer.prod.laptop') }}</a></li>
+          <li><a href="#products">{{ __('site.footer.prod.printer') }}</a></li>
+          <li><a href="#products">{{ __('site.footer.prod.proj') }}</a></li>
+          <li><a href="#products">{{ __('site.footer.prod.acc') }}</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Şirkət</h4>
+        <h4>{{ __('site.footer.company') }}</h4>
         <ul>
-          <li><a href="#about">Haqqımızda</a></li>
-          <li><a href="#contact">Əlaqə</a></li>
-          <li><a href="#order">Sifariş et</a></li>
+          <li><a href="#about">{{ __('site.footer.about_link') }}</a></li>
+          <li><a href="#contact">{{ __('site.footer.contact_link') }}</a></li>
+          <li><a href="#order">{{ __('site.footer.order_link') }}</a></li>
           <li><a href="https://wa.me/994557895745" target="_blank">WhatsApp</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© {{ date('Y') }} <span>TechnoBey.az</span> – Bütün hüquqlar qorunur.</p>
-      <p>Bakıda kompüter satışı | Printer təmiri | Proyektor satışı</p>
+      <p>© {{ date('Y') }} <span>TechnoBey.az</span> – {{ __('site.footer.rights') }}</p>
+      <p>{{ __('site.footer.seo') }}</p>
     </div>
   </div>
 </footer>
@@ -379,6 +525,7 @@
   <a href="https://wa.me/{{ $waRaw }}?text={{ $waMsg }}" target="_blank" class="float-btn float-wa" title="WhatsApp">💬</a>
 </div>
 
+<button type="button" class="scroll-top" id="scrollTopBtn" onclick="scrollToTop()" aria-label="Yuxarı">↑</button>
 <script src="{{ asset('js/main.js') }}?v={{ filemtime(public_path('js/main.js')) }}"></script>
 </body>
 </html>

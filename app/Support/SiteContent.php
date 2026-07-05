@@ -7,8 +7,6 @@ use App\Models\Product;
 
 class SiteContent
 {
-    public const ADMIN_PASSWORD = 'totuTbrufuzor26';
-
     /** Section adlarından hansılarının DB-də saxlandığı. */
     private const DB_SECTIONS = ['products', 'orders'];
 
@@ -54,14 +52,16 @@ class SiteContent
         file_put_contents(self::path($section), json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
-    public static function appendOrder(array $data): void
+    public static function appendOrder(array $data): Order
     {
-        Order::create([
-            'name'    => $data['name'] ?? '',
-            'phone'   => $data['phone'] ?? '',
-            'email'   => $data['email'] ?? null,
-            'service' => $data['service'] ?? '',
-            'notes'   => $data['notes'] ?? null,
+        return Order::create([
+            'name'       => $data['name'] ?? '',
+            'phone'      => $data['phone'] ?? '',
+            'email'      => $data['email'] ?? null,
+            'service'    => $data['service'] ?? '',
+            'notes'      => $data['notes'] ?? null,
+            'status'     => 'new',
+            'track_code' => Order::generateTrackCode(),
         ]);
     }
 
@@ -83,14 +83,21 @@ class SiteContent
             }
         }
         $meta['list'] = Product::orderBy('id')->get()->map(fn ($p) => [
-            'id'    => $p->id,
-            'name'  => $p->name,
-            'cat'   => $p->cat,
-            'price' => $p->price,
-            'unit'  => $p->unit,
-            'emoji' => $p->emoji,
-            'image' => $p->image,
-            'desc'  => $p->desc,
+            'id'      => $p->id,
+            'name'    => $p->name,
+            'name_en' => $p->name_en,
+            'name_ru' => $p->name_ru,
+            'cat'     => $p->cat,
+            'price'   => $p->price,
+            'unit'    => $p->unit,
+            'stock'   => (int) $p->stock,
+            'views'   => (int) $p->views,
+            'emoji'   => $p->emoji,
+            'image'   => $p->image,
+            'images'  => is_array($p->images) ? $p->images : [],
+            'desc'    => $p->desc,
+            'desc_en' => $p->desc_en,
+            'desc_ru' => $p->desc_ru,
         ])->all();
         return $meta;
     }
@@ -112,13 +119,19 @@ class SiteContent
         $incomingIds = [];
         foreach ($list as $item) {
             $attrs = [
-                'name'  => $item['name']  ?? '',
-                'cat'   => $item['cat']   ?? '',
-                'price' => (string)($item['price'] ?? ''),
-                'unit'  => $item['unit']  ?? 'ədəd',
-                'emoji' => $item['emoji'] ?? '📦',
-                'image' => $item['image'] ?? null,
-                'desc'  => $item['desc']  ?? null,
+                'name'    => $item['name']    ?? '',
+                'name_en' => $item['name_en'] ?? null,
+                'name_ru' => $item['name_ru'] ?? null,
+                'cat'     => $item['cat']   ?? '',
+                'price'   => (string)($item['price'] ?? ''),
+                'unit'    => $item['unit']  ?? 'ədəd',
+                'stock'   => (int)($item['stock'] ?? 0),
+                'emoji'   => $item['emoji'] ?? '📦',
+                'image'   => $item['image'] ?? null,
+                'images'  => is_array($item['images'] ?? null) ? array_values(array_filter($item['images'])) : [],
+                'desc'    => $item['desc']    ?? null,
+                'desc_en' => $item['desc_en'] ?? null,
+                'desc_ru' => $item['desc_ru'] ?? null,
             ];
             if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {
                 Product::where('id', $item['id'])->update($attrs);
@@ -140,13 +153,15 @@ class SiteContent
         $tz = new \DateTimeZone('Asia/Baku');
         $list = Order::orderBy('id')->get()->map(function ($o) use ($tz) {
             return [
-                'id'      => $o->id,
-                'date'    => $o->created_at ? $o->created_at->setTimezone($tz)->format('Y-m-d H:i') : '',
-                'name'    => $o->name,
-                'phone'   => $o->phone,
-                'email'   => $o->email,
-                'service' => $o->service,
-                'notes'   => $o->notes,
+                'id'         => $o->id,
+                'date'       => $o->created_at ? $o->created_at->setTimezone($tz)->format('Y-m-d H:i') : '',
+                'name'       => $o->name,
+                'phone'      => $o->phone,
+                'email'      => $o->email,
+                'service'    => $o->service,
+                'notes'      => $o->notes,
+                'status'     => $o->status ?: 'new',
+                'track_code' => $o->track_code,
             ];
         })->all();
         return ['list' => $list];
@@ -160,6 +175,9 @@ class SiteContent
         foreach ($list as $item) {
             if (!empty($item['id'])) {
                 $incomingIds[] = (int)$item['id'];
+                if (isset($item['status']) && in_array($item['status'], Order::STATUSES, true)) {
+                    Order::where('id', (int)$item['id'])->update(['status' => $item['status']]);
+                }
             }
         }
         $toDelete = array_diff($existingIds, $incomingIds);
@@ -186,6 +204,15 @@ class SiteContent
                     ['emoji' => '🖥️', 'title' => 'Gaming & Office PC', 'desc' => 'Intel Core i5–i9, 16–64GB RAM, SSD seçimləri'],
                     ['emoji' => '🖨️', 'title' => 'Printerlər', 'desc' => 'HP, Canon, Epson brendləri'],
                     ['emoji' => '📽️', 'title' => 'Proyektorlar', 'desc' => '4K, Full HD, portativ'],
+                ],
+            ],
+            'trust' => [
+                'enabled' => true,
+                'cards' => [
+                    ['icon' => '✅', 'title' => '1 il rəsmi zəmanət',      'desc' => 'Bütün məhsullar rəsmi distribütor zəmanəti ilə. İlk 12 ay ərzində istənilən texniki nasazlıq üçün pulsuz servis.'],
+                    ['icon' => '🚚', 'title' => 'Eyni gün çatdırılma',    'desc' => 'Bakı daxilində bütün sifarişlər 4-6 saat ərzində çatdırılır. 500 AZN-dən yuxarı sifarişlər üçün pulsuz.'],
+                    ['icon' => '🔒', 'title' => '100% orijinal məhsul',   'desc' => 'HP, Canon, Epson, Intel — yalnız rəsmi idxal edilmiş orijinal məhsullar. Saxta məhsul risqi sıfırdır.'],
+                    ['icon' => '💳', 'title' => 'Kart və taksitlə ödəmə', 'desc' => 'Kapital Bank, Bank of Baku, ABB — hissə-hissə ödəmə seçimi. Nağdsız ödəmə üçün POS terminalı.'],
                 ],
             ],
             'services' => [

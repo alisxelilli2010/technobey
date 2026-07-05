@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <title>TechnoBey – Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -13,8 +15,18 @@
     --border: #1E2D4A; --blue: #0057FF; --cyan: #00C2FF;
     --text: #E8EEFF; --muted: #7B8DB0; --white: #FFFFFF;
     --green: #16a34a; --red: #dc2626; --orange: #d97706;
+    --card-soft: rgba(255,255,255,0.04);
+    --input-bg: rgba(255,255,255,0.04);
+    --shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
-  body { background: var(--night); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+  [data-theme="light"] {
+    --night: #F5F7FB; --deep: #FFFFFF; --card: #FFFFFF;
+    --border: #E4E9F2; --text: #1E2D4A; --muted: #6B7280; --white: #0A1128;
+    --card-soft: #F8FAFC;
+    --input-bg: #F8FAFC;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  body { background: var(--night); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; transition: background 0.25s, color 0.25s; }
 
   /* LOGIN */
   .login-screen {
@@ -85,7 +97,86 @@
   .logout-btn:hover { background: rgba(220,38,38,0.2); }
 
   /* MAIN */
-  .main-content { margin-left: 240px; padding: 32px; flex: 1; }
+  .main-content { margin-left: 240px; padding: 92px 32px 32px; flex: 1; position: relative; }
+
+  /* TOP NAVBAR */
+  .admin-topbar {
+    position: fixed; top: 0; left: 240px; right: 0; z-index: 500;
+    height: 62px; padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: color-mix(in srgb, var(--deep) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-home {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); padding: 8px 16px; border-radius: 100px;
+    font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+  .topbar-home:hover { border-color: var(--blue); color: var(--white); background: rgba(0,87,255,0.08); }
+  .topbar-home-ico { font-size: 1rem; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .edit-lang-picker { display: inline-flex; align-items: center; gap: 8px; }
+  .edit-lang-label { color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  @media (max-width: 720px) { .edit-lang-label { display: none; } }
+  .theme-toggle {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); font-size: 1.1rem; cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--blue); background: rgba(0,87,255,0.08); transform: rotate(20deg); }
+
+  /* USER BADGE */
+  .user-badge {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card-soft); border: 1px solid var(--border);
+    border-radius: 100px; padding: 5px 16px 5px 5px; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .user-badge:hover { border-color: var(--blue); background: rgba(0,87,255,0.08); }
+  .user-badge-avatar {
+    width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #FFFFFF; font-weight: 800; font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .user-badge-avatar { width: 32px; height: 32px; font-size: 0.85rem; }
+  .user-badge-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .user-badge-name { color: var(--white); font-weight: 700; font-size: 0.88rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 768px) {
+    .admin-topbar { left: 200px; padding: 0 20px; }
+  }
+  @media (max-width: 560px) {
+    .admin-topbar { left: 0; padding: 0 14px; }
+    .topbar-home { padding: 6px 12px; font-size: 0.82rem; }
+    .user-badge { padding: 4px 12px 4px 4px; }
+    .user-badge-avatar { width: 28px; height: 28px; font-size: 0.8rem; }
+    .user-badge-name { max-width: 90px; font-size: 0.78rem; }
+  }
+
+  /* PROFILE PAGE */
+  .profile-grid { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .profile-grid { grid-template-columns: 1fr; } }
+  .profile-avatar-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; text-align: center;
+  }
+  .profile-avatar {
+    width: 160px; height: 160px; border-radius: 50%; overflow: hidden;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF; font-weight: 800; font-size: 3.6rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    border: 3px solid var(--border);
+  }
+  .profile-avatar:hover { transform: scale(1.02); box-shadow: 0 8px 32px rgba(0,87,255,0.3); border-color: var(--blue); }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .profile-avatar-hint { color: var(--muted); font-size: 0.78rem; margin-top: 4px; }
   .page { display: none; }
   .page.active { display: block; }
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
@@ -120,6 +211,50 @@
   .stat-card .label { font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .stat-card .value { font-size: 2rem; font-weight: 800; color: var(--white); letter-spacing: -1px; }
   .stat-card .value span { color: var(--cyan); font-size: 1.3rem; }
+  .stat-delta {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 10px; font-size: 0.78rem; font-weight: 700;
+  }
+  .stat-delta small { font-weight: 500; color: var(--muted); }
+  .stat-delta.up   { color: #4ade80; }
+  .stat-delta.down { color: #f87171; }
+  .stat-delta.flat { color: var(--muted); }
+
+  /* Dashboard feeds */
+  .dashboard-feeds {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0;
+  }
+  @media (max-width: 900px) { .dashboard-feeds { grid-template-columns: 1fr; } }
+  .feed { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
+  .feed-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border); border-radius: 10px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .feed-row:hover { border-color: var(--blue); background: rgba(0,87,255,0.06); }
+  .feed-avatar, .feed-thumb {
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color: #fff; font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .feed-thumb { border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid var(--border); }
+  .feed-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-title { color: var(--white); font-size: 0.88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feed-code { color: var(--cyan); font-family: monospace; font-size: 0.72rem; font-weight: 500; margin-left: 6px; }
+  .feed-sub   { color: var(--muted); font-size: 0.76rem; margin-top: 2px; }
+  .feed-empty { padding: 30px 12px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  .status-pill-sm {
+    padding: 3px 10px; border-radius: 100px; font-size: 0.68rem;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .status-pill-sm.new        { background: rgba(0,194,255,0.15); color: #00c2ff; }
+  .status-pill-sm.processing { background: rgba(217,119,6,0.15); color: #fbbf24; }
+  .status-pill-sm.shipped    { background: rgba(0,87,255,0.15); color: #60a5fa; }
+  .status-pill-sm.delivered  { background: rgba(22,163,74,0.15); color: #4ade80; }
+  .status-pill-sm.cancelled  { background: rgba(220,38,38,0.15); color: #f87171; }
 
   /* BUTTONS */
   .add-btn {
@@ -265,6 +400,61 @@
   }
   .img-preview-sm img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+  /* GALLERY THUMBNAILS (admin) */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+  .gallery-thumb {
+    position: relative; padding-top: 100%; border-radius: 10px; overflow: hidden;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  }
+  .gallery-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery-thumb-del {
+    position: absolute; top: 4px; right: 4px; z-index: 2;
+    width: 26px; height: 26px; border-radius: 50%; border: 0;
+    background: rgba(220,38,38,0.9); color: #fff; font-size: 0.85rem;
+    cursor: pointer; padding: 0; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .gallery-thumb-del:hover { background: #dc2626; }
+
+  /* LANG TABS (multi-language content editor) */
+  .lang-tabs {
+    display: inline-flex; gap: 4px; padding: 3px;
+    background: var(--card-soft); border: 1px solid var(--border);
+    border-radius: 100px; margin-bottom: 8px;
+  }
+  .lang-tab {
+    background: transparent; border: 0; padding: 4px 12px;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    border-radius: 100px; cursor: pointer; font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .lang-tab:hover { color: var(--white); }
+  .lang-tab.active {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color: #fff;
+  }
+  .lang-tab .flag { font-size: 0.85rem; margin-right: 4px; }
+  .lang-input { display: none; }
+  .lang-input.active { display: block; }
+  .form-grp.lang-group > label { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+  /* STOCK BADGE (admin table) */
+  .stock-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 700;
+  }
+  .stock-tag.in  { background: rgba(22,163,74,0.15); color: #4ade80; }
+  .stock-tag.low { background: rgba(217,119,6,0.15); color: #fbbf24; }
+  .stock-tag.out { background: rgba(220,38,38,0.15); color: #f87171; }
+
+  /* ORDER STATUS SELECT */
+  .order-status-select {
+    background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+    color: var(--white); border-radius: 8px; padding: 6px 10px;
+    font-size: 0.82rem; font-family: inherit; outline: none; cursor: pointer;
+  }
+  .order-status-select option { background: var(--card); }
+
   /* MODAL (delete confirm) */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -316,20 +506,20 @@
 <body>
 
 <!-- LOGIN -->
-<div class="login-screen" id="loginScreen">
+<div class="login-screen" id="loginScreen" style="display:{{ auth()->check() ? 'none' : 'flex' }}">
   <div class="login-box">
     <div style="font-size:2.5rem;margin-bottom:12px">💻</div>
     <h1>TechnoBey Admin</h1>
-    <p>İdarəetmə panelinə daxil olmaq üçün şifrənizi daxil edin</p>
-    <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="off" oninput="document.getElementById('loginErr').style.display='none'">
-    <input type="password" id="loginPass" placeholder="Şifrə" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
+    <p>İdarəetmə panelinə daxil olmaq üçün məlumatları daxil edin</p>
+    <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="username" oninput="document.getElementById('loginErr').style.display='none'">
+    <input type="password" id="loginPass" placeholder="Şifrə" autocomplete="current-password" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Daxil ol →</button>
     <div class="login-err" id="loginErr">❌ İstifadəçi adı və ya şifrə yanlışdır</div>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
-<div class="admin-layout" id="adminPanel" style="display:none">
+<div class="admin-layout" id="adminPanel" style="display:{{ auth()->check() ? 'flex' : 'none' }}">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -350,6 +540,9 @@
       <div class="nav-item" data-page="hero" onclick="showPage('hero', this)">
         <span class="nav-ico">🎯</span> Hero
       </div>
+      <div class="nav-item" data-page="trust" onclick="showPage('trust', this)">
+        <span class="nav-ico">🛡️</span> Zəmanətlər
+      </div>
       <div class="nav-item" data-page="services" onclick="showPage('services', this)">
         <span class="nav-ico">🛠️</span> Xidmətlər
       </div>
@@ -367,8 +560,16 @@
       <div class="nav-item" data-page="products" onclick="showPage('products', this)">
         <span class="nav-ico">📦</span> Məhsullar
       </div>
+      <div class="nav-item" data-page="categories" onclick="showPage('categories', this)">
+        <span class="nav-ico">🗂️</span> Kateqoriyalar
+      </div>
       <div class="nav-item" data-page="add" onclick="showPage('add', this)">
         <span class="nav-ico">➕</span> Yeni Məhsul
+      </div>
+
+      <div class="nav-group-label">Content</div>
+      <div class="nav-item" data-page="testimonials" onclick="showPage('testimonials', this)">
+        <span class="nav-ico">⭐</span> Müştəri Rəyləri
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -378,6 +579,30 @@
 
   <!-- MAIN -->
   <main class="main-content">
+
+    <!-- TOP NAVBAR -->
+    <header class="admin-topbar">
+      <button type="button" class="topbar-home" onclick="showPage('dashboard', document.querySelector('[data-page=dashboard]'))">
+        <span class="topbar-home-ico">🏠</span> Əsas səhifə
+      </button>
+      <div class="topbar-right">
+        <div class="edit-lang-picker" title="Bölmə formalarını hansı dildə redaktə edirsən">
+          <span class="edit-lang-label">Redaktə:</span>
+          <div class="lang-tabs" data-lgroup="editLang" style="margin:0">
+            <button type="button" class="lang-tab active" data-lgroup="editLang" data-llang="az" onclick="switchEditLang('az', this)"><span class="flag">🇦🇿</span>AZ</button>
+            <button type="button" class="lang-tab" data-lgroup="editLang" data-llang="en" onclick="switchEditLang('en', this)"><span class="flag">🇬🇧</span>EN</button>
+            <button type="button" class="lang-tab" data-lgroup="editLang" data-llang="ru" onclick="switchEditLang('ru', this)"><span class="flag">🇷🇺</span>RU</button>
+          </div>
+        </div>
+        <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Rejimi dəyiş">
+          <span id="themeToggleIco">🌙</span>
+        </button>
+        <div class="user-badge" id="userBadge" onclick="showPage('profile', null)" title="Profil">
+          <div class="user-badge-avatar" id="userBadgeAvatar"><span id="userBadgeInitial">?</span></div>
+          <div class="user-badge-name" id="userBadgeName">…</div>
+        </div>
+      </div>
+    </header>
 
     <!-- DASHBOARD -->
     <div class="page active" id="pageDashboard">
@@ -405,6 +630,17 @@
         <div class="chart-panel wide">
           <div class="chart-header"><h3>🛒 Ən çox sifariş edilən xidmət növləri</h3></div>
           <div class="chart-body sm"><canvas id="chartByService"></canvas></div>
+        </div>
+      </div>
+
+      <div class="dashboard-feeds">
+        <div class="panel">
+          <h3>📥 Son sifarişlər</h3>
+          <div id="recentOrdersFeed" class="feed"></div>
+        </div>
+        <div class="panel">
+          <h3>⚠️ Aşağı ehtiyat xəbərdarlığı</h3>
+          <div id="lowStockFeed" class="feed"></div>
         </div>
       </div>
 
@@ -436,7 +672,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Tarix</th><th>Ad</th><th>Telefon</th><th>Xidmət</th><th>Qeyd</th><th>Əməliyyat</th>
+            <th>Tarix</th><th>Kod</th><th>Ad</th><th>Telefon</th><th>Xidmət</th><th>Status</th><th>Qeyd</th><th>Əməliyyat</th>
           </tr></thead>
           <tbody id="ordersTableBody"></tbody>
         </table>
@@ -524,6 +760,28 @@
         </div>
         @endforeach
       </div>
+    </div>
+
+    <!-- TRUST -->
+    <div class="page" id="pageTrust">
+      <div class="page-header">
+        <div>
+          <h2>🛡️ Zəmanətlər / Trust Badges</h2>
+          <p>Hero altında göstərilən zəmanət kartları</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="ghost-btn" onclick="addTrustCard()">➕ Yeni kart</button>
+          <button class="add-btn" onclick="saveTrust()">💾 Yadda saxla</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="form-grp">
+          <label style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="trustEnabled"> Bu bölməni sayta göstər
+          </label>
+        </div>
+      </div>
+      <div id="trustCardsContainer"></div>
     </div>
 
     <!-- SERVICES -->
@@ -669,7 +927,7 @@
         </div>
         <table>
           <thead><tr>
-            <th>Şəkil</th><th>Məhsul adı</th><th>Kateqoriya</th><th>Qiymət</th><th>Açıqlama</th><th>Əməliyyat</th>
+            <th>Şəkil</th><th>Məhsul adı</th><th>Kateqoriya</th><th>Qiymət</th><th>Stok</th><th>Açıqlama</th><th>Əməliyyat</th>
           </tr></thead>
           <tbody id="productTableBody"></tbody>
         </table>
@@ -689,8 +947,16 @@
         <input type="hidden" id="editId">
         <div class="form-row">
           <div class="form-grp">
-            <label>Məhsul adı *</label>
-            <input type="text" id="fName" placeholder="məs. HP LaserJet Pro">
+            <label>Məhsul adı *
+              <span class="lang-tabs" data-lgroup="fName">
+                <button type="button" class="lang-tab active" data-lgroup="fName" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+                <button type="button" class="lang-tab" data-lgroup="fName" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+                <button type="button" class="lang-tab" data-lgroup="fName" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+              </span>
+            </label>
+            <input type="text" id="fName" data-lgroup="fName" data-llang="az" class="lang-input active" placeholder="məs. HP LaserJet Pro">
+            <input type="text" id="fNameEn" data-lgroup="fName" data-llang="en" class="lang-input" placeholder="e.g. HP LaserJet Pro">
+            <input type="text" id="fNameRu" data-lgroup="fName" data-llang="ru" class="lang-input" placeholder="напр. HP LaserJet Pro">
           </div>
           <div class="form-grp">
             <label>Kateqoriya *</label>
@@ -707,11 +973,15 @@
             <input type="number" id="fPrice" placeholder="məs. 450">
           </div>
           <div class="form-grp">
+            <label>Ehtiyat sayı (stock)</label>
+            <input type="number" id="fStock" min="0" placeholder="0">
+          </div>
+          <div class="form-grp">
             <label>Emoji ikonu (şəkil olmadıqda göstərilir)</label>
             <input type="text" id="fEmoji" placeholder="məs. 🖨️" maxlength="4">
           </div>
           <div class="form-grp full">
-            <label>Məhsul şəkli (şəkil hissəsinə klikləyin)</label>
+            <label>Əsas şəkil</label>
             <div class="img-uploader" id="fImageBox">
               <input type="hidden" id="fImage">
               <input type="file" id="fImageFile" accept="image/*" style="display:none" onchange="uploadProductImage(this)">
@@ -724,8 +994,22 @@
             </div>
           </div>
           <div class="form-grp full">
-            <label>Qısa açıqlama *</label>
-            <textarea id="fDesc" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
+            <label>Əlavə şəkillər (galery)</label>
+            <input type="file" id="fGalleryFile" accept="image/*" multiple style="display:none" onchange="uploadGalleryImages(this, 'f')">
+            <div class="gallery-grid" id="fGalleryGrid"></div>
+            <button type="button" class="ghost-btn" onclick="document.getElementById('fGalleryFile').click()" style="margin-top:8px">➕ Şəkil əlavə et</button>
+          </div>
+          <div class="form-grp full">
+            <label>Qısa açıqlama *
+              <span class="lang-tabs" data-lgroup="fDesc">
+                <button type="button" class="lang-tab active" data-lgroup="fDesc" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+                <button type="button" class="lang-tab" data-lgroup="fDesc" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+                <button type="button" class="lang-tab" data-lgroup="fDesc" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+              </span>
+            </label>
+            <textarea id="fDesc" data-lgroup="fDesc" data-llang="az" class="lang-input active" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
+            <textarea id="fDescEn" data-lgroup="fDesc" data-llang="en" class="lang-input" placeholder="Color printing, Wi-Fi, 3-in-1"></textarea>
+            <textarea id="fDescRu" data-lgroup="fDesc" data-llang="ru" class="lang-input" placeholder="Цветная печать, Wi-Fi, 3-в-1"></textarea>
           </div>
           <div class="form-grp">
             <label>Qiymət vahidi</label>
@@ -743,6 +1027,105 @@
       </div>
     </div>
 
+    <!-- PROFILE -->
+    <div class="page" id="pageProfile">
+      <div class="page-header">
+        <div>
+          <h2>👤 Profil</h2>
+          <p>İstifadəçi məlumatlarını idarə et</p>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-avatar-box">
+          <input type="file" id="profAvatarFile" accept="image/*" style="display:none" onchange="uploadProfileAvatar(this)">
+          <div class="profile-avatar" id="profAvatar" onclick="document.getElementById('profAvatarFile').click()" title="Avatarı dəyişmək üçün klikləyin">
+            <span id="profAvatarInitial">?</span>
+          </div>
+          <div class="profile-avatar-hint">Yükləmək üçün şəklə klikləyin</div>
+          <button type="button" class="cancel-btn" style="margin-top:12px;width:100%" onclick="removeProfileAvatar()">🗑️ Avatarı sil</button>
+        </div>
+        <div>
+          <div class="panel">
+            <h3>👤 Ümumi məlumatlar</h3>
+            <div class="form-row">
+              <div class="form-grp full">
+                <label>İstifadəçi adı</label>
+                <input type="text" id="profName" autocomplete="username">
+              </div>
+              <div class="form-grp full">
+                <label>Email</label>
+                <input type="email" id="profEmail" autocomplete="email">
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="save-btn" onclick="saveProfile()">💾 Yadda Saxla</button>
+              <button class="cancel-btn" onclick="loadProfile()">↺ Geri qaytar</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>🔒 Şifrəni dəyiş</h3>
+            <div class="form-row">
+              <div class="form-grp full">
+                <label>Cari şifrə</label>
+                <input type="password" id="profCurPass" autocomplete="current-password">
+              </div>
+              <div class="form-grp">
+                <label>Yeni şifrə (min 6 simvol)</label>
+                <input type="password" id="profNewPass" autocomplete="new-password">
+              </div>
+              <div class="form-grp">
+                <label>Yeni şifrə (təkrar)</label>
+                <input type="password" id="profNewPass2" autocomplete="new-password">
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="save-btn" onclick="changePassword()">🔐 Şifrəni dəyiş</button>
+              <button class="cancel-btn" onclick="clearPassFields()">Təmizlə</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="page" id="pageCategories">
+      <div class="page-header">
+        <div>
+          <h2>🗂️ Kateqoriyalar</h2>
+          <p>Məhsul kateqoriyalarını idarə et</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="ghost-btn" onclick="addCategory()">➕ Yeni kateqoriya</button>
+          <button class="add-btn" onclick="saveCategories()">💾 Yadda saxla</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="info-note">
+          <strong>Qeyd:</strong> Slug — URL və məhsul əlaqələndirməsi üçün istifadə olunan latın hərfli açardır (məs. <code>komputer</code>, <code>printer</code>).
+          Mövcud məhsullar bu açara bağlıdır — slug-u dəyişəndə diqqətli ol.
+        </div>
+        <div id="categoriesContainer"></div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div class="page" id="pageTestimonials">
+      <div class="page-header">
+        <div>
+          <h2>⭐ Müştəri Rəyləri</h2>
+          <p>Ana səhifədə göstərilən rəyləri idarə et</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="ghost-btn" onclick="addTestimonial()">➕ Yeni rəy</button>
+          <button class="add-btn" onclick="saveTestimonials()">💾 Yadda saxla</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div id="testimonialsContainer"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -754,8 +1137,16 @@
     <input type="hidden" id="eId">
     <div class="form-row">
       <div class="form-grp">
-        <label>Məhsul adı *</label>
-        <input type="text" id="eName" placeholder="məs. HP LaserJet Pro">
+        <label>Məhsul adı *
+          <span class="lang-tabs" data-lgroup="eName">
+            <button type="button" class="lang-tab active" data-lgroup="eName" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+            <button type="button" class="lang-tab" data-lgroup="eName" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+            <button type="button" class="lang-tab" data-lgroup="eName" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+          </span>
+        </label>
+        <input type="text" id="eName" data-lgroup="eName" data-llang="az" class="lang-input active" placeholder="məs. HP LaserJet Pro">
+        <input type="text" id="eNameEn" data-lgroup="eName" data-llang="en" class="lang-input" placeholder="e.g. HP LaserJet Pro">
+        <input type="text" id="eNameRu" data-lgroup="eName" data-llang="ru" class="lang-input" placeholder="напр. HP LaserJet Pro">
       </div>
       <div class="form-grp">
         <label>Kateqoriya *</label>
@@ -772,11 +1163,15 @@
         <input type="number" id="ePrice" placeholder="məs. 450">
       </div>
       <div class="form-grp">
+        <label>Ehtiyat sayı (stock)</label>
+        <input type="number" id="eStock" min="0" placeholder="0">
+      </div>
+      <div class="form-grp">
         <label>Emoji ikonu (şəkil olmadıqda)</label>
         <input type="text" id="eEmoji" placeholder="məs. 🖨️" maxlength="4">
       </div>
       <div class="form-grp full">
-        <label>Məhsul şəkli (şəkil hissəsinə klikləyin)</label>
+        <label>Əsas şəkil</label>
         <div class="img-uploader">
           <input type="hidden" id="eImage">
           <input type="file" id="eImageFile" accept="image/*" style="display:none" onchange="uploadEditImage(this)">
@@ -789,8 +1184,22 @@
         </div>
       </div>
       <div class="form-grp full">
-        <label>Qısa açıqlama *</label>
-        <textarea id="eDesc" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
+        <label>Əlavə şəkillər (galery)</label>
+        <input type="file" id="eGalleryFile" accept="image/*" multiple style="display:none" onchange="uploadGalleryImages(this, 'e')">
+        <div class="gallery-grid" id="eGalleryGrid"></div>
+        <button type="button" class="ghost-btn" onclick="document.getElementById('eGalleryFile').click()" style="margin-top:8px">➕ Şəkil əlavə et</button>
+      </div>
+      <div class="form-grp full">
+        <label>Qısa açıqlama *
+          <span class="lang-tabs" data-lgroup="eDesc">
+            <button type="button" class="lang-tab active" data-lgroup="eDesc" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+            <button type="button" class="lang-tab" data-lgroup="eDesc" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+            <button type="button" class="lang-tab" data-lgroup="eDesc" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+          </span>
+        </label>
+        <textarea id="eDesc" data-lgroup="eDesc" data-llang="az" class="lang-input active" placeholder="məs. Rəngli çap, Wi-Fi dəstəkli, 3-ü 1-də"></textarea>
+        <textarea id="eDescEn" data-lgroup="eDesc" data-llang="en" class="lang-input" placeholder="Color printing, Wi-Fi, 3-in-1"></textarea>
+        <textarea id="eDescRu" data-lgroup="eDesc" data-llang="ru" class="lang-input" placeholder="Цветная печать, Wi-Fi, 3-в-1"></textarea>
       </div>
       <div class="form-grp">
         <label>Qiymət vahidi</label>
@@ -896,13 +1305,17 @@
 
 <script>
   // ===== AUTH =====
-  const ADMIN_USER = 'Rufat';
-  const ADMIN_PASS = 'totuTbrufuzor26';
-  const AUTH_KEY = 'tb_admin_auth';
+  const IS_AUTHED = {!! auth()->check() ? 'true' : 'false' !!};
+  const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-  function enterAdmin() {
+  async function enterAdmin() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'flex';
+    // Kateqoriyaları arxa planda yüklə ki, məhsul formasındakı select yenilənsin
+    try {
+      const res = await fetch('/api/categories', { headers: { 'Accept': 'application/json' } });
+      if (res.ok) { _cats = await res.json(); refreshProductCategoryOptions(); }
+    } catch {}
     const hash = (location.hash || '').replace('#', '');
     const initial = hash && hash !== 'login' && document.getElementById('page' + hash.charAt(0).toUpperCase() + hash.slice(1)) ? hash : 'dashboard';
     showPage(initial);
@@ -928,36 +1341,473 @@
     try { history.replaceState(null, '', '#login'); } catch {}
   }
 
-  function doLogin() {
+  async function doLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
-    if (u === ADMIN_USER && p === ADMIN_PASS) {
-      try { sessionStorage.setItem(AUTH_KEY, '1'); } catch {}
-      try { localStorage.removeItem(AUTH_KEY); } catch {}
-      enterAdmin();
-    } else {
+    if (!u || !p) {
+      document.getElementById('loginErr').textContent = '❌ İstifadəçi adı və şifrə boş ola bilməz';
+      document.getElementById('loginErr').style.display = 'block';
+      return;
+    }
+    try {
+      const res = await fetch('/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ username: u, password: p }),
+      });
+      if (!res.ok) {
+        let msg = '❌ İstifadəçi adı və ya şifrə yanlışdır';
+        try { const j = await res.json(); if (j.error) msg = '❌ ' + j.error; } catch {}
+        document.getElementById('loginErr').textContent = msg;
+        document.getElementById('loginErr').style.display = 'block';
+        return;
+      }
+      // Sessiya yaradıldıqdan sonra yeni CSRF token almaq üçün səhifəni tam yenidən yükləyirik
+      location.reload();
+    } catch (e) {
+      document.getElementById('loginErr').textContent = '❌ Server xətası: ' + e.message;
       document.getElementById('loginErr').style.display = 'block';
     }
   }
-  function doLogout() {
-    try { sessionStorage.removeItem(AUTH_KEY); } catch {}
-    try { localStorage.removeItem(AUTH_KEY); } catch {}
+  async function doLogout() {
     stopDashboardAutoRefresh();
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('loginUser').value = '';
-    document.getElementById('loginPass').value = '';
-    showLoginHash();
+    try {
+      await fetch('/admin/logout', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+    } catch {}
+    location.reload();
   }
 
-  // Yalnız cari tab sessiyasında login qalır — tab bağlanan kimi çıxış edir
-  try {
-    if (sessionStorage.getItem(AUTH_KEY) === '1') {
-      document.addEventListener('DOMContentLoaded', enterAdmin);
-    } else {
-      document.addEventListener('DOMContentLoaded', showLoginHash);
+  if (IS_AUTHED) {
+    document.addEventListener('DOMContentLoaded', enterAdmin);
+    document.addEventListener('DOMContentLoaded', refreshUserWidget);
+  } else {
+    document.addEventListener('DOMContentLoaded', showLoginHash);
+  }
+
+  // ===== THEME =====
+  const THEME_KEY = 'tb_theme';
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const ico = document.getElementById('themeToggleIco');
+    if (ico) ico.textContent = theme === 'light' ? '☀️' : '🌙';
+    try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    applyTheme(cur === 'light' ? 'dark' : 'light');
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    let saved = 'dark';
+    try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch {}
+    applyTheme(saved);
+  });
+
+  // ===== EDIT LOCALE (which language is being edited in JSON sections) =====
+  const EDIT_LANG_KEY = 'tb_edit_lang';
+  let _editLang = 'az';
+  try { _editLang = localStorage.getItem(EDIT_LANG_KEY) || 'az'; } catch {}
+  function currentEditLang() { return _editLang; }
+  async function switchEditLang(lang, btn) {
+    if (!['az','en','ru'].includes(lang)) return;
+    _editLang = lang;
+    try { localStorage.setItem(EDIT_LANG_KEY, lang); } catch {}
+    document.querySelectorAll('.lang-tab[data-lgroup="editLang"]').forEach(t => t.classList.toggle('active', t.dataset.llang === lang));
+    // Aktiv bölmə form-unu yenidən yüklə ki yeni dilin dəyərləri görünsün
+    const active = document.querySelector('.page.active');
+    if (!active) return;
+    const id = active.id || '';
+    const name = id.replace(/^page/, '').charAt(0).toLowerCase() + id.replace(/^page/, '').slice(1);
+    try {
+      if (name === 'hero') await loadHero();
+      else if (name === 'trust') await loadTrust();
+      else if (name === 'services') await loadServices();
+      else if (name === 'why') await loadWhy();
+      else if (name === 'about') await loadAbout();
+      else if (name === 'contact') await loadContact();
+    } catch {}
+  }
+  // Populate initial active state on load
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.lang-tab[data-lgroup="editLang"]').forEach(t => t.classList.toggle('active', t.dataset.llang === _editLang));
+  });
+  // ' l' — cari edit locale-ında dəyəri götür (string və ya {az,en,ru} obyekt qəbul edir)
+  function lGet(v) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v[_editLang] || v.az || '';
+    return v || '';
+  }
+  // Cari locale-ı yeni obyektdə yenilə, digərlərini saxla
+  function lSet(current, newVal) {
+    let obj = (current && typeof current === 'object' && !Array.isArray(current))
+      ? { az: current.az || '', en: current.en || '', ru: current.ru || '' }
+      : { az: (current || ''), en: '', ru: '' };
+    obj[_editLang] = newVal;
+    // Boşdursa az fallback-i saxla, digərlərini null etmirik
+    return obj;
+  }
+
+  // ===== USER WIDGET =====
+  let _currentUser = null;
+  async function fetchMe() {
+    const res = await fetch('/api/me', { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('me failed');
+    return await res.json();
+  }
+  function renderUserWidget(u) {
+    _currentUser = u;
+    const initial = (u.name || '?').trim().charAt(0).toUpperCase() || '?';
+    document.getElementById('userBadgeName').textContent = u.name || '';
+    const av = document.getElementById('userBadgeAvatar');
+    av.innerHTML = u.avatar
+      ? `<img src="${escapeAttr(u.avatar)}" alt="">`
+      : `<span>${escapeHtml(initial)}</span>`;
+  }
+  async function refreshUserWidget() {
+    try { renderUserWidget(await fetchMe()); } catch {}
+  }
+
+  // ===== PROFILE PAGE =====
+  async function loadProfile() {
+    let u;
+    try { u = await fetchMe(); } catch (e) { showToast('❌ Yüklənmədi: ' + e.message, true); return; }
+    document.getElementById('profName').value = u.name || '';
+    document.getElementById('profEmail').value = u.email || '';
+    renderProfileAvatar(u.avatar || '');
+    renderUserWidget(u);
+    clearPassFields();
+  }
+  function renderProfileAvatar(url) {
+    const box = document.getElementById('profAvatar');
+    const initial = (document.getElementById('profName').value || '?').trim().charAt(0).toUpperCase() || '?';
+    box.innerHTML = url
+      ? `<img src="${escapeAttr(url)}" alt="">`
+      : `<span id="profAvatarInitial">${escapeHtml(initial)}</span>`;
+    box.dataset.url = url || '';
+  }
+  async function uploadProfileAvatar(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      renderProfileAvatar(url);
+      await saveProfile(true);
+      showToast('✅ Avatar yeniləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
     }
-  } catch {}
+  }
+  async function removeProfileAvatar() {
+    renderProfileAvatar('');
+    await saveProfile(true);
+    showToast('🗑️ Avatar silindi');
+  }
+  async function saveProfile(silent = false) {
+    const name  = document.getElementById('profName').value.trim();
+    const email = document.getElementById('profEmail').value.trim();
+    const avatar = document.getElementById('profAvatar').dataset.url || null;
+    if (!name || !email) { if (!silent) showToast('❌ Ad və email məcburidir', true); return; }
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ name, email, avatar }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Yadda saxlanmadı';
+        try { const j = await res.json(); if (j.message) msg = j.message; if (j.errors) msg = Object.values(j.errors).flat().join(', '); } catch {}
+        throw new Error(msg);
+      }
+      const j = await res.json();
+      if (j.user) renderUserWidget(j.user);
+      if (!silent) showToast('✅ Profil yeniləndi');
+    } catch (e) {
+      if (!silent) showToast('❌ ' + e.message, true);
+    }
+  }
+  function clearPassFields() {
+    ['profCurPass','profNewPass','profNewPass2'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+  }
+  async function changePassword() {
+    const cur = document.getElementById('profCurPass').value;
+    const nw  = document.getElementById('profNewPass').value;
+    const nw2 = document.getElementById('profNewPass2').value;
+    if (!cur || !nw) { showToast('❌ Cari və yeni şifrə məcburidir', true); return; }
+    if (nw.length < 6) { showToast('❌ Yeni şifrə minimum 6 simvol olmalıdır', true); return; }
+    if (nw !== nw2) { showToast('❌ Yeni şifrələr uyğun gəlmir', true); return; }
+    try {
+      const res = await fetch('/api/profile/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({
+          current_password: cur,
+          new_password: nw,
+          new_password_confirmation: nw2,
+        }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Şifrə dəyişdirilmədi';
+        try { const j = await res.json(); if (j.error) msg = j.error; else if (j.message) msg = j.message; } catch {}
+        throw new Error(msg);
+      }
+      clearPassFields();
+      showToast('✅ Şifrə uğurla dəyişdirildi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+
+  // ===== CATEGORIES =====
+  let _cats = [];
+  async function loadCategories() {
+    const res = await fetch('/api/categories', { headers: { 'Accept': 'application/json' } });
+    _cats = res.ok ? await res.json() : [];
+    renderCategories();
+  }
+  function renderCategories() {
+    document.getElementById('categoriesContainer').innerHTML = _cats.map((c, i) => `
+      <div class="item-row" data-cat-idx="${i}">
+        <div class="item-row-header">
+          <span class="item-row-title">${escapeHtml(c.icon || '📦')} ${escapeHtml(c.name_az || 'Yeni')}</span>
+          <button class="item-row-del" onclick="removeCategory(${i})">🗑️ Sil</button>
+        </div>
+        <div class="form-row three">
+          <div class="form-grp"><label>İkon (emoji)</label><input type="text" value="${escapeAttr(c.icon || '')}" data-fld="icon" maxlength="8"></div>
+          <div class="form-grp"><label>Slug (latın hərfi)</label><input type="text" value="${escapeAttr(c.slug || '')}" data-fld="slug" placeholder="komputer"></div>
+          <div class="form-grp"><label>Sıra</label><input type="number" value="${c.sort ?? 0}" data-fld="sort"></div>
+          <div class="form-grp"><label>Ad (AZ)</label><input type="text" value="${escapeAttr(c.name_az || '')}" data-fld="name_az"></div>
+          <div class="form-grp"><label>Ad (EN)</label><input type="text" value="${escapeAttr(c.name_en || '')}" data-fld="name_en"></div>
+          <div class="form-grp"><label>Ad (RU)</label><input type="text" value="${escapeAttr(c.name_ru || '')}" data-fld="name_ru"></div>
+        </div>
+      </div>
+    `).join('') || '<div class="empty-state"><div class="ico">🗂️</div><p>Hələ kateqoriya yoxdur</p></div>';
+  }
+  function collectCategories() {
+    return Array.from(document.querySelectorAll('[data-cat-idx]')).map((row, i) => {
+      const get = fld => row.querySelector(`[data-fld="${fld}"]`).value.trim();
+      return {
+        id: _cats[i]?.id ?? null,
+        slug: get('slug').toLowerCase().replace(/[^a-z0-9_-]/g, '-').slice(0, 60),
+        name_az: get('name_az'),
+        name_en: get('name_en') || null,
+        name_ru: get('name_ru') || null,
+        icon: get('icon') || '📦',
+        sort: parseInt(get('sort'), 10) || 0,
+      };
+    });
+  }
+  function addCategory() {
+    _cats.push({ id: null, slug: '', name_az: 'Yeni kateqoriya', name_en: '', name_ru: '', icon: '📦', sort: _cats.length + 1 });
+    renderCategories();
+  }
+  function removeCategory(idx) {
+    const collected = collectCategories();
+    collected.splice(idx, 1);
+    _cats = collected;
+    renderCategories();
+  }
+  async function saveCategories() {
+    const items = collectCategories();
+    for (const it of items) {
+      if (!it.slug || !it.name_az) { showToast('❌ Hər kateqoriya üçün slug və AZ adı məcburidir', true); return; }
+    }
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ items }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Yadda saxlanmadı';
+        try { const j = await res.json(); if (j.errors) msg = Object.values(j.errors).flat().join(', '); } catch {}
+        throw new Error(msg);
+      }
+      await loadCategories();
+      // Product form kateqoriya select-lərini yenilə
+      refreshProductCategoryOptions();
+      showToast('✅ Kateqoriyalar yeniləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+  function refreshProductCategoryOptions() {
+    const opts = '<option value="">Seçin...</option>' + _cats.map(c => `<option value="${escapeAttr(c.slug)}">${escapeHtml(c.icon)} ${escapeHtml(c.name_az)}</option>`).join('');
+    ['fCat', 'eCat'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (sel) { const cur = sel.value; sel.innerHTML = opts; sel.value = cur; }
+    });
+  }
+
+  // ===== TESTIMONIALS =====
+  let _tests = [];
+  async function loadTestimonials() {
+    const res = await fetch('/api/admin/testimonials', { headers: { 'Accept': 'application/json' } });
+    if (res.status === 401 || res.status === 419) { location.reload(); return; }
+    _tests = res.ok ? await res.json() : [];
+    renderTestimonials();
+  }
+  function renderTestimonials() {
+    document.getElementById('testimonialsContainer').innerHTML = _tests.map((t, i) => `
+      <div class="item-row" data-test-idx="${i}">
+        <div class="item-row-header">
+          <span class="item-row-title">Rəy #${i + 1} ${t.published ? '' : '<small style="color:var(--muted);margin-left:8px">(gizli)</small>'}</span>
+          <button class="item-row-del" onclick="removeTestimonial(${i})">🗑️ Sil</button>
+        </div>
+        <div class="form-row">
+          <div class="form-grp"><label>Ad Soyad</label><input type="text" value="${escapeAttr(t.name || '')}" data-fld="name"></div>
+          <div class="form-grp full">
+            <label>Vəzifə / şirkət
+              <span class="lang-tabs" data-lgroup="tPos${i}">
+                <button type="button" class="lang-tab active" data-lgroup="tPos${i}" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+                <button type="button" class="lang-tab" data-lgroup="tPos${i}" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+                <button type="button" class="lang-tab" data-lgroup="tPos${i}" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+              </span>
+            </label>
+            <input type="text" class="lang-input active" data-lgroup="tPos${i}" data-llang="az" data-fld="position" value="${escapeAttr(t.position || '')}">
+            <input type="text" class="lang-input"        data-lgroup="tPos${i}" data-llang="en" data-fld="position_en" value="${escapeAttr(t.position_en || '')}">
+            <input type="text" class="lang-input"        data-lgroup="tPos${i}" data-llang="ru" data-fld="position_ru" value="${escapeAttr(t.position_ru || '')}">
+          </div>
+          <div class="form-grp full">
+            <label>Avatar (klikləyib şəkil yüklə)</label>
+            <div class="img-uploader">
+              <input type="hidden" data-fld="avatar" value="${escapeAttr(t.avatar || '')}">
+              <input type="file" data-test-file accept="image/*" style="display:none" onchange="uploadTestimonialAvatar(this, ${i})">
+              <div class="img-preview img-preview-clickable" data-test-prev onclick="_testRow(${i}).querySelector('[data-test-file]').click()">
+                ${t.avatar ? `<img src="${escapeAttr(t.avatar)}" alt="">` : '<span class="img-preview-empty">➕ Şəkil</span>'}
+              </div>
+              <div class="img-uploader-actions">
+                <button type="button" class="cancel-btn" onclick="clearTestimonialAvatar(${i})">🗑️ Sil</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-grp full">
+            <label>Rəy mətni
+              <span class="lang-tabs" data-lgroup="tText${i}">
+                <button type="button" class="lang-tab active" data-lgroup="tText${i}" data-llang="az" onclick="switchLangTab(this)"><span class="flag">🇦🇿</span>AZ</button>
+                <button type="button" class="lang-tab" data-lgroup="tText${i}" data-llang="en" onclick="switchLangTab(this)"><span class="flag">🇬🇧</span>EN</button>
+                <button type="button" class="lang-tab" data-lgroup="tText${i}" data-llang="ru" onclick="switchLangTab(this)"><span class="flag">🇷🇺</span>RU</button>
+              </span>
+            </label>
+            <textarea class="lang-input active" data-lgroup="tText${i}" data-llang="az" data-fld="text">${escapeHtml(t.text || '')}</textarea>
+            <textarea class="lang-input"        data-lgroup="tText${i}" data-llang="en" data-fld="text_en">${escapeHtml(t.text_en || '')}</textarea>
+            <textarea class="lang-input"        data-lgroup="tText${i}" data-llang="ru" data-fld="text_ru">${escapeHtml(t.text_ru || '')}</textarea>
+          </div>
+          <div class="form-grp"><label>Reytinq (1-5)</label><input type="number" min="1" max="5" value="${t.rating ?? 5}" data-fld="rating"></div>
+          <div class="form-grp"><label>Sıra</label><input type="number" value="${t.sort ?? 0}" data-fld="sort"></div>
+          <div class="form-grp"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-fld="published" ${t.published !== false ? 'checked' : ''}> Sayta göstər</label></div>
+        </div>
+      </div>
+    `).join('') || '<div class="empty-state"><div class="ico">⭐</div><p>Hələ heç bir rəy yoxdur</p></div>';
+  }
+  function _testRow(idx) { return document.querySelector(`[data-test-idx="${idx}"]`); }
+  function collectTestimonials() {
+    return Array.from(document.querySelectorAll('[data-test-idx]')).map((row, i) => {
+      const get = fld => row.querySelector(`[data-fld="${fld}"]`)?.value.trim() ?? '';
+      const isChecked = fld => row.querySelector(`[data-fld="${fld}"]`).checked;
+      return {
+        id: _tests[i]?.id ?? null,
+        name: get('name'),
+        position:    get('position')    || null,
+        position_en: get('position_en') || null,
+        position_ru: get('position_ru') || null,
+        text:    get('text'),
+        text_en: get('text_en') || null,
+        text_ru: get('text_ru') || null,
+        avatar: get('avatar') || null,
+        rating: Math.max(1, Math.min(5, parseInt(get('rating'), 10) || 5)),
+        sort: parseInt(get('sort'), 10) || 0,
+        published: isChecked('published'),
+      };
+    });
+  }
+  function addTestimonial() {
+    _tests.push({ id: null, name: '', position: '', text: '', avatar: null, rating: 5, sort: _tests.length + 1, published: true });
+    renderTestimonials();
+  }
+  function removeTestimonial(idx) {
+    const collected = collectTestimonials();
+    collected.splice(idx, 1);
+    _tests = collected;
+    renderTestimonials();
+  }
+  async function uploadTestimonialAvatar(input, idx) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      const row = _testRow(idx);
+      row.querySelector('[data-fld="avatar"]').value = url;
+      row.querySelector('[data-test-prev]').innerHTML = `<img src="${escapeAttr(url)}" alt="">`;
+      showToast('✅ Yükləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearTestimonialAvatar(idx) {
+    const row = _testRow(idx);
+    row.querySelector('[data-fld="avatar"]').value = '';
+    row.querySelector('[data-test-prev]').innerHTML = '<span class="img-preview-empty">➕ Şəkil</span>';
+  }
+  async function saveTestimonials() {
+    const items = collectTestimonials();
+    for (const it of items) {
+      if (!it.name || !it.text) { showToast('❌ Ad və mətn məcburidir', true); return; }
+    }
+    try {
+      const res = await fetch('/api/admin/testimonials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ items }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) throw new Error('Yadda saxlanmadı');
+      await loadTestimonials();
+      showToast('✅ Rəylər yeniləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
 
   // ===== API HELPERS =====
   async function apiGet(section) {
@@ -971,10 +1821,12 @@
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'X-Admin-Password': ADMIN_PASS,
+        'X-CSRF-TOKEN': CSRF_TOKEN,
+        'X-Requested-With': 'XMLHttpRequest',
       },
       body: JSON.stringify(data),
     });
+    if (res.status === 401 || res.status === 419) { location.reload(); return; }
     if (!res.ok) throw new Error('Save failed: ' + res.status);
     return await res.json();
   }
@@ -983,9 +1835,14 @@
     fd.append('file', file);
     const res = await fetch('/api/upload', {
       method: 'POST',
-      headers: { 'Accept': 'application/json', 'X-Admin-Password': ADMIN_PASS },
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': CSRF_TOKEN,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
       body: fd,
     });
+    if (res.status === 401 || res.status === 419) { location.reload(); return; }
     if (!res.ok) {
       let msg = 'Upload failed: ' + res.status;
       try { const j = await res.json(); if (j.message) msg = j.message; } catch {}
@@ -1017,7 +1874,7 @@
   }
 
   // ===== NAV =====
-  const VALID_PAGES = ['dashboard','orders','hero','services','why','about','contact','products','add'];
+  const VALID_PAGES = ['dashboard','orders','hero','trust','services','why','about','contact','products','add','profile','categories','testimonials'];
 
   async function showPage(name, el) {
     if (!VALID_PAGES.includes(name)) name = 'dashboard';
@@ -1042,20 +1899,26 @@
       if (name === 'add') {
         document.getElementById('formTitle').textContent = 'Yeni Məhsul Əlavə Et';
         document.getElementById('editId').value = '';
-        ['fName','fCat','fPrice','fEmoji','fDesc'].forEach(id => {
+        ['fName','fNameEn','fNameRu','fCat','fPrice','fStock','fEmoji','fDesc','fDescEn','fDescRu'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.value = '';
         });
         const unitEl = document.getElementById('fUnit');
         if (unitEl) unitEl.value = 'ədəd';
         setProductImage('');
+        _galleryF = [];
+        renderGalleryGrid('f');
       }
       if (name === 'orders') await renderOrders();
       if (name === 'hero') await loadHero();
+      if (name === 'trust') await loadTrust();
       if (name === 'services') await loadServices();
       if (name === 'why') await loadWhy();
       if (name === 'about') await loadAbout();
       if (name === 'contact') await loadContact();
+      if (name === 'profile') await loadProfile();
+      if (name === 'categories') await loadCategories();
+      if (name === 'testimonials') await loadTestimonials();
     } catch (e) {
       showToast('❌ Server xətası: ' + e.message, true);
     }
@@ -1071,11 +1934,33 @@
     if (!stats) { showToast('❌ Statistika yüklənmədi', true); return; }
 
     const s = stats.summary;
+    const deltaHtml = (pct) => {
+      if (pct === undefined || pct === null) return '';
+      const cls = pct > 0 ? 'up' : (pct < 0 ? 'down' : 'flat');
+      const arrow = pct > 0 ? '▲' : (pct < 0 ? '▼' : '●');
+      return `<span class="stat-delta ${cls}">${arrow} ${Math.abs(pct)}% <small>keçən həftədən</small></span>`;
+    };
     document.getElementById('statsRow').innerHTML = `
-      <div class="stat-card"><div class="label">Bu ay sifariş</div><div class="value">${s.monthOrders}<span></span></div></div>
-      <div class="stat-card"><div class="label">Bu ay ziyarətçi</div><div class="value">${s.monthVisits}<span></span></div></div>
-      <div class="stat-card"><div class="label">Ümumi məhsul</div><div class="value">${s.totalProducts}<span>+</span></div></div>
-      <div class="stat-card"><div class="label">Ümumi sifariş</div><div class="value">${s.totalOrders}<span></span></div></div>
+      <div class="stat-card">
+        <div class="label">Bu ay sifariş</div>
+        <div class="value">${s.monthOrders}</div>
+        ${deltaHtml(s.ordersDeltaPct)}
+      </div>
+      <div class="stat-card">
+        <div class="label">Bu ay ziyarətçi</div>
+        <div class="value">${s.monthVisits}</div>
+        ${deltaHtml(s.visitsDeltaPct)}
+      </div>
+      <div class="stat-card">
+        <div class="label">Ümumi məhsul</div>
+        <div class="value">${s.totalProducts}<span>+</span></div>
+        <span class="stat-delta flat"><small>anbar məhsulları</small></span>
+      </div>
+      <div class="stat-card">
+        <div class="label">Ümumi sifariş</div>
+        <div class="value">${s.totalOrders}</div>
+        <span class="stat-delta flat"><small>bütün zamanlar</small></span>
+      </div>
     `;
 
     renderChartMonthly(stats.monthly);
@@ -1083,18 +1968,57 @@
     renderChartWeekly(stats.weekly);
     renderChartByService(stats.byService);
 
+    // Yeni: son sifarişlər feed
+    const roBox = document.getElementById('recentOrdersFeed');
+    if (roBox) {
+      const rows = (stats.recentOrders || []);
+      roBox.innerHTML = rows.length
+        ? rows.map(o => `
+          <div class="feed-row">
+            <div class="feed-avatar">${escapeHtml((o.name || '?').charAt(0).toUpperCase())}</div>
+            <div class="feed-body">
+              <div class="feed-title">${escapeHtml(o.name || '-')} <span class="feed-code">${escapeHtml(o.track_code || '')}</span></div>
+              <div class="feed-sub">${escapeHtml(o.service || '')} · ${escapeHtml(o.date || '')}</div>
+            </div>
+            <span class="status-pill-sm ${o.status}">${ORDER_STATUSES[o.status] || o.status}</span>
+          </div>
+        `).join('')
+        : '<div class="feed-empty">Hələ sifariş yoxdur</div>';
+    }
+
+    // Yeni: aşağı ehtiyat xəbərdarlığı
+    const lsBox = document.getElementById('lowStockFeed');
+    if (lsBox) {
+      const items = (stats.lowStock || []);
+      lsBox.innerHTML = items.length
+        ? items.map(p => `
+          <div class="feed-row" onclick="editProduct(${p.id})" style="cursor:pointer">
+            <div class="feed-thumb">${p.image ? `<img src="${escapeAttr(p.image)}" alt="">` : (p.emoji || '📦')}</div>
+            <div class="feed-body">
+              <div class="feed-title">${escapeHtml(p.name)}</div>
+              <div class="feed-sub">Anbar: <strong style="color:${p.stock <= 0 ? '#f87171' : '#fbbf24'}">${p.stock} ədəd</strong></div>
+            </div>
+            <span class="stock-tag ${p.stock <= 0 ? 'out' : 'low'}">${p.stock <= 0 ? 'Bitib' : 'Az qalıb'}</span>
+          </div>
+        `).join('')
+        : '<div class="feed-empty">✅ Bütün məhsullar kifayət qədər anbarda var</div>';
+    }
+
     const recent = products.slice(-5).reverse();
-    document.getElementById('recentTableBody').innerHTML = recent.length
-      ? recent.map(p => `<tr>
-          <td>${p.image ? `<span class="img-preview-sm" style="margin-right:8px"><img src="${escapeAttr(p.image)}" alt=""></span>` : (p.emoji || '📦') + ' '}${escapeHtml(p.name)}</td>
-          <td><span class="cat-badge">${p.cat}</span></td>
-          <td class="price-cell">${p.price} ₼</td>
-          <td><div class="action-btns">
-            <button class="edit-btn" onclick="editProduct(${p.id})">✏️ Redaktə</button>
-            <button class="del-btn" onclick="openDeleteModal(${p.id})">🗑️</button>
-          </div></td>
-        </tr>`).join('')
-      : '<tr><td colspan="4"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir məhsul yoxdur</p></div></td></tr>';
+    const rt = document.getElementById('recentTableBody');
+    if (rt) {
+      rt.innerHTML = recent.length
+        ? recent.map(p => `<tr>
+            <td>${p.image ? `<span class="img-preview-sm" style="margin-right:8px"><img src="${escapeAttr(p.image)}" alt=""></span>` : (p.emoji || '📦') + ' '}${escapeHtml(p.name)}</td>
+            <td><span class="cat-badge">${p.cat}</span></td>
+            <td class="price-cell">${p.price} ₼</td>
+            <td><div class="action-btns">
+              <button class="edit-btn" onclick="editProduct(${p.id})">✏️ Redaktə</button>
+              <button class="del-btn" onclick="openDeleteModal(${p.id})">🗑️</button>
+            </div></td>
+          </tr>`).join('')
+        : '<tr><td colspan="4"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir məhsul yoxdur</p></div></td></tr>';
+    }
   }
 
   function destroyChart(key) {
@@ -1207,19 +2131,36 @@
   let _ordersCache = [];
   let deleteOrderTargetIdx = null;
 
+  const ORDER_STATUSES = { new: 'Yeni', processing: 'Hazırlanır', shipped: 'Yoldadır', delivered: 'Çatdırıldı', cancelled: 'Ləğv edildi' };
   async function renderOrders() {
     const data = await apiGet('orders');
     _ordersCache = data.list || [];
     document.getElementById('ordersTableBody').innerHTML = _ordersCache.length
-      ? _ordersCache.slice().reverse().map((o, idx) => `<tr>
+      ? _ordersCache.slice().reverse().map((o, idx) => {
+          const realIdx = _ordersCache.length - 1 - idx;
+          const statusOpts = Object.entries(ORDER_STATUSES).map(([k, v]) => `<option value="${k}"${(o.status || 'new') === k ? ' selected' : ''}>${v}</option>`).join('');
+          return `<tr>
           <td style="white-space:nowrap;color:var(--muted);font-size:0.8rem">${o.date || '-'}</td>
+          <td style="font-family:monospace;font-size:0.78rem;color:var(--cyan)">${o.track_code || '-'}</td>
           <td><strong style="color:var(--white)">${o.name || '-'}</strong></td>
           <td>${o.phone || '-'}</td>
           <td><span class="cat-badge">${o.service || '-'}</span></td>
-          <td style="color:var(--muted);font-size:0.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.notes || '-'}</td>
-          <td><button class="del-btn" onclick="openOrderDeleteModal(${_ordersCache.length - 1 - idx})">🗑️ Sil</button></td>
-        </tr>`).join('')
-      : '<tr><td colspan="6"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir sifariş yoxdur</p></div></td></tr>';
+          <td><select class="order-status-select" onchange="changeOrderStatus(${realIdx}, this.value)">${statusOpts}</select></td>
+          <td style="color:var(--muted);font-size:0.82rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.notes || '-'}</td>
+          <td><button class="del-btn" onclick="openOrderDeleteModal(${realIdx})">🗑️ Sil</button></td>
+        </tr>`;
+        }).join('')
+      : '<tr><td colspan="8"><div class="empty-state"><div class="ico">📭</div><p>Hələ heç bir sifariş yoxdur</p></div></td></tr>';
+  }
+  async function changeOrderStatus(idx, status) {
+    if (!_ordersCache[idx]) return;
+    _ordersCache[idx].status = status;
+    try {
+      await apiSave('orders', { list: _ordersCache });
+      showToast('✅ Status yeniləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
   }
 
   function openOrderDeleteModal(idx) {
@@ -1267,44 +2208,56 @@
   }
 
   // ===== HERO =====
+  let _heroRaw = {}; // ham JSON — save vaxtı digər dilləri qorumaq üçün
   async function loadHero() {
     const h = await apiGet('hero');
-    document.getElementById('heroBadge').value = h.badge || '';
-    document.getElementById('heroTitle').value = h.title || '';
-    document.getElementById('heroSub').value = h.sub || '';
-    document.getElementById('heroBtn1Text').value = h.btn1Text || '';
+    _heroRaw = h || {};
+    document.getElementById('heroBadge').value    = lGet(h.badge);
+    document.getElementById('heroTitle').value    = lGet(h.title);
+    document.getElementById('heroSub').value      = lGet(h.sub);
+    document.getElementById('heroBtn1Text').value = lGet(h.btn1Text);
     document.getElementById('heroBtn1Link').value = h.btn1Link || '';
-    document.getElementById('heroBtn2Text').value = h.btn2Text || '';
+    document.getElementById('heroBtn2Text').value = lGet(h.btn2Text);
     document.getElementById('heroBtn2Link').value = h.btn2Link || '';
     (h.stats || []).forEach((s, i) => {
       const n = document.getElementById(`heroStat${i+1}Num`); if (n) n.value = s.num || '';
-      const l = document.getElementById(`heroStat${i+1}Lbl`); if (l) l.value = s.label || '';
+      const l = document.getElementById(`heroStat${i+1}Lbl`); if (l) l.value = lGet(s.label);
     });
     (h.devices || []).forEach((d, i) => {
       const e = document.getElementById(`heroDev${i+1}Emoji`); if (e) e.value = d.emoji || '';
-      const t = document.getElementById(`heroDev${i+1}Title`); if (t) t.value = d.title || '';
-      const ds = document.getElementById(`heroDev${i+1}Desc`); if (ds) ds.value = d.desc || '';
+      const t = document.getElementById(`heroDev${i+1}Title`); if (t) t.value = lGet(d.title);
+      const ds = document.getElementById(`heroDev${i+1}Desc`); if (ds) ds.value = lGet(d.desc);
       setHeroDeviceImage(i + 1, d.image || '');
     });
   }
   async function saveHero() {
+    const raw = _heroRaw || {};
     const h = {
-      badge: document.getElementById('heroBadge').value,
-      title: document.getElementById('heroTitle').value,
-      sub: document.getElementById('heroSub').value,
-      btn1Text: document.getElementById('heroBtn1Text').value,
+      badge:    lSet(raw.badge,    document.getElementById('heroBadge').value),
+      title:    lSet(raw.title,    document.getElementById('heroTitle').value),
+      sub:      lSet(raw.sub,      document.getElementById('heroSub').value),
+      btn1Text: lSet(raw.btn1Text, document.getElementById('heroBtn1Text').value),
       btn1Link: document.getElementById('heroBtn1Link').value,
-      btn2Text: document.getElementById('heroBtn2Text').value,
+      btn2Text: lSet(raw.btn2Text, document.getElementById('heroBtn2Text').value),
       btn2Link: document.getElementById('heroBtn2Link').value,
-      stats: [1,2,3].map(i => ({ num: document.getElementById(`heroStat${i}Num`).value, label: document.getElementById(`heroStat${i}Lbl`).value })),
-      devices: [1,2,3].map(i => ({
-        emoji: document.getElementById(`heroDev${i}Emoji`).value,
-        title: document.getElementById(`heroDev${i}Title`).value,
-        desc:  document.getElementById(`heroDev${i}Desc`).value,
-        image: document.getElementById(`heroDev${i}Image`).value || null,
-      })),
+      stats: [1,2,3].map(i => {
+        const prev = (raw.stats || [])[i-1] || {};
+        return {
+          num: document.getElementById(`heroStat${i}Num`).value,
+          label: lSet(prev.label, document.getElementById(`heroStat${i}Lbl`).value),
+        };
+      }),
+      devices: [1,2,3].map(i => {
+        const prev = (raw.devices || [])[i-1] || {};
+        return {
+          emoji: document.getElementById(`heroDev${i}Emoji`).value,
+          title: lSet(prev.title, document.getElementById(`heroDev${i}Title`).value),
+          desc:  lSet(prev.desc,  document.getElementById(`heroDev${i}Desc`).value),
+          image: document.getElementById(`heroDev${i}Image`).value || null,
+        };
+      }),
     };
-    try { await apiSave('hero', h); showToast('✅ Hero bölməsi yadda saxlandı'); }
+    try { await apiSave('hero', h); _heroRaw = h; showToast('✅ Hero (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
   function setHeroDeviceImage(i, url) {
@@ -1332,13 +2285,92 @@
   }
   function clearHeroDeviceImage(i) { setHeroDeviceImage(i, ''); }
 
+  // ===== TRUST BADGES =====
+  let _trustRaw = {};
+  async function loadTrust() {
+    const t = await apiGet('trust');
+    _trustRaw = t || {};
+    document.getElementById('trustEnabled').checked = t.enabled !== false;
+    // Kartlarda display üçün cari dili göstərmək — amma raw-daki obyekt formasını saxlamaq üçün
+    const displayCards = (t.cards || []).map(c => ({
+      icon: c.icon || '✅',
+      title: lGet(c.title),
+      desc:  lGet(c.desc),
+    }));
+    renderTrustCards(displayCards);
+  }
+  function renderTrustCards(cards) {
+    document.getElementById('trustCardsContainer').innerHTML = '<div class="panel"><h3>Zəmanət Kartları <small>(' + cards.length + ' ədəd)</small></h3>' +
+      cards.map((card, i) => `
+        <div class="item-row" data-trust-idx="${i}">
+          <div class="item-row-header">
+            <span class="item-row-title">Kart #${i+1}</span>
+            <button class="item-row-del" onclick="removeTrustCard(${i})">🗑️ Sil</button>
+          </div>
+          <div class="form-row">
+            <div class="form-grp"><label>İkon (emoji)</label><input type="text" value="${escapeAttr(card.icon)}" data-fld="icon" maxlength="4"></div>
+            <div class="form-grp"><label>Başlıq</label><input type="text" value="${escapeAttr(card.title)}" data-fld="title"></div>
+            <div class="form-grp full"><label>Açıqlama</label><textarea data-fld="desc">${escapeHtml(card.desc)}</textarea></div>
+          </div>
+        </div>
+      `).join('') + '</div>';
+  }
+  function collectTrustCards() {
+    return Array.from(document.querySelectorAll('[data-trust-idx]')).map(row => {
+      const get = fld => row.querySelector(`[data-fld="${fld}"]`).value;
+      return { icon: get('icon'), title: get('title'), desc: get('desc') };
+    });
+  }
+  function addTrustCard() {
+    // Cari display cards-a ekle
+    const cards = collectTrustCards();
+    cards.push({ icon: '✅', title: 'Yeni zəmanət', desc: 'Açıqlama...' });
+    renderTrustCards(cards);
+    // Raw-a da boş yer ekle
+    (_trustRaw.cards = _trustRaw.cards || []).push({ icon: '✅', title: '', desc: '' });
+  }
+  function removeTrustCard(idx) {
+    const cards = collectTrustCards();
+    cards.splice(idx, 1);
+    renderTrustCards(cards);
+    if (Array.isArray(_trustRaw.cards)) _trustRaw.cards.splice(idx, 1);
+  }
+  async function saveTrust() {
+    const display = collectTrustCards();
+    const rawCards = _trustRaw.cards || [];
+    const merged = display.map((c, i) => {
+      const prev = rawCards[i] || {};
+      return {
+        icon:  c.icon,
+        title: lSet(prev.title, c.title),
+        desc:  lSet(prev.desc,  c.desc),
+      };
+    });
+    const payload = {
+      enabled: document.getElementById('trustEnabled').checked,
+      cards: merged,
+    };
+    try { await apiSave('trust', payload); _trustRaw = payload; showToast('✅ Zəmanətlər (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
+    catch (e) { showToast('❌ ' + e.message, true); }
+  }
+
   // ===== SERVICES =====
+  let _srvRaw = {};
   async function loadServices() {
     const s = await apiGet('services');
-    document.getElementById('srvEyebrow').value = s.eyebrow || '';
-    document.getElementById('srvTitle').value = s.title || '';
-    document.getElementById('srvSub').value = s.sub || '';
-    renderServiceCards(s.cards || []);
+    _srvRaw = s || {};
+    document.getElementById('srvEyebrow').value = lGet(s.eyebrow);
+    document.getElementById('srvTitle').value   = lGet(s.title);
+    document.getElementById('srvSub').value     = lGet(s.sub);
+    const display = (s.cards || []).map(c => ({
+      icon: c.icon || '✨',
+      title: lGet(c.title),
+      image: c.image || null,
+      desc:  lGet(c.desc),
+      linkText: lGet(c.linkText),
+      link: c.link || '#order',
+    }));
+    renderServiceCards(display);
   }
   function renderServiceCards(cards) {
     const c = document.getElementById('servicesCardsContainer');
@@ -1451,24 +2483,42 @@
     showToast('🗑️ Kart silindi. Yadda saxla düyməsini unutma!');
   }
   async function saveServices() {
+    const raw = _srvRaw || {};
+    const displayCards = collectServiceCards();
+    const rawCards = raw.cards || [];
+    const merged = displayCards.map((c, i) => {
+      const prev = rawCards[i] || {};
+      return {
+        icon: c.icon,
+        title:    lSet(prev.title,    c.title),
+        image:    c.image,
+        desc:     lSet(prev.desc,     c.desc),
+        linkText: lSet(prev.linkText, c.linkText),
+        link:     c.link,
+      };
+    });
     const s = {
-      eyebrow: document.getElementById('srvEyebrow').value,
-      title: document.getElementById('srvTitle').value,
-      sub: document.getElementById('srvSub').value,
-      cards: collectServiceCards(),
+      eyebrow: lSet(raw.eyebrow, document.getElementById('srvEyebrow').value),
+      title:   lSet(raw.title,   document.getElementById('srvTitle').value),
+      sub:     lSet(raw.sub,     document.getElementById('srvSub').value),
+      cards: merged,
     };
-    try { await apiSave('services', s); showToast('✅ Xidmətlər bölməsi yadda saxlandı'); }
+    try { await apiSave('services', s); _srvRaw = s; showToast('✅ Xidmətlər (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
 
   // ===== WHY US =====
+  let _whyRaw = {};
   async function loadWhy() {
     const w = await apiGet('why');
-    document.getElementById('whyEyebrow').value = w.eyebrow || '';
-    document.getElementById('whyTitle').value = w.title || '';
-    document.getElementById('whySub').value = w.sub || '';
-    renderWhyFeatures(w.features || []);
-    renderWhyMetrics(w.metrics || []);
+    _whyRaw = w || {};
+    document.getElementById('whyEyebrow').value = lGet(w.eyebrow);
+    document.getElementById('whyTitle').value   = lGet(w.title);
+    document.getElementById('whySub').value     = lGet(w.sub);
+    const feats = (w.features || []).map(f => ({ icon: f.icon || '✨', title: lGet(f.title), desc: lGet(f.desc) }));
+    const mets  = (w.metrics  || []).map(m => ({ num: m.num || '', suffix: m.suffix || '', label: lGet(m.label) }));
+    renderWhyFeatures(feats);
+    renderWhyMetrics(mets);
   }
   function renderWhyFeatures(items) {
     document.getElementById('whyFeaturesContainer').innerHTML = items.map((f, i) => `
@@ -1549,23 +2599,42 @@
     showToast('🗑️ Metrika silindi. Yadda saxla düyməsini unutma!');
   }
   async function saveWhy() {
+    const raw = _whyRaw || {};
+    const dispFeats = collectWhyFeatures();
+    const rawFeats = raw.features || [];
+    const feats = dispFeats.map((f, i) => {
+      const prev = rawFeats[i] || {};
+      return { icon: f.icon, title: lSet(prev.title, f.title), desc: lSet(prev.desc, f.desc) };
+    });
+    const dispMets = collectWhyMetrics();
+    const rawMets = raw.metrics || [];
+    const mets = dispMets.map((m, i) => {
+      const prev = rawMets[i] || {};
+      return { num: m.num, suffix: m.suffix, label: lSet(prev.label, m.label) };
+    });
     const w = {
-      eyebrow: document.getElementById('whyEyebrow').value,
-      title: document.getElementById('whyTitle').value,
-      sub: document.getElementById('whySub').value,
-      features: collectWhyFeatures(),
-      metrics: collectWhyMetrics(),
+      eyebrow: lSet(raw.eyebrow, document.getElementById('whyEyebrow').value),
+      title:   lSet(raw.title,   document.getElementById('whyTitle').value),
+      sub:     lSet(raw.sub,     document.getElementById('whySub').value),
+      features: feats,
+      metrics: mets,
     };
-    try { await apiSave('why', w); showToast('✅ Niyə Biz bölməsi yadda saxlandı'); }
+    try { await apiSave('why', w); _whyRaw = w; showToast('✅ Niyə Biz (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
 
   // ===== ABOUT =====
+  // Hansı sahələr multi-lang olur (dəyəri obyekt kimi saxlanmalıdır)
+  const ABOUT_LANG_KEYS = new Set(['badge1','badge2','badge3','title','text','btnText','centerName','centerAddr','met1Lbl','met2Lbl']);
+  const CONTACT_LANG_KEYS = new Set(['eyebrow','title','sub','addr','addrNote','hours']);
+  let _aboutRaw = {}, _contactRaw = {};
+
   async function loadAbout() {
     const a = await apiGet('about');
+    _aboutRaw = a || {};
     Object.keys(a).forEach(k => {
       const el = document.getElementById('ab' + k.charAt(0).toUpperCase() + k.slice(1));
-      if (el) el.value = a[k] || '';
+      if (el) el.value = ABOUT_LANG_KEYS.has(k) ? lGet(a[k]) : (a[k] || '');
     });
   }
   async function saveAbout() {
@@ -1573,28 +2642,31 @@
     const a = {};
     ids.forEach(id => {
       const key = id.charAt(0).toLowerCase() + id.slice(1);
-      a[key] = document.getElementById('ab' + id).value;
+      const val = document.getElementById('ab' + id).value;
+      a[key] = ABOUT_LANG_KEYS.has(key) ? lSet(_aboutRaw[key], val) : val;
     });
-    try { await apiSave('about', a); showToast('✅ Haqqımızda bölməsi yadda saxlandı'); }
+    try { await apiSave('about', a); _aboutRaw = a; showToast('✅ Haqqımızda (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
 
   // ===== CONTACT =====
   async function loadContact() {
     const c = await apiGet('contact');
+    _contactRaw = c || {};
     const map = { Eyebrow:'eyebrow', Title:'title', Sub:'sub', Addr:'addr', AddrNote:'addrNote', Phone:'phone', Hours:'hours', Email:'email', Whatsapp:'whatsapp', MapSrc:'mapSrc' };
     Object.entries(map).forEach(([id, key]) => {
       const el = document.getElementById('ct' + id);
-      if (el) el.value = c[key] || '';
+      if (el) el.value = CONTACT_LANG_KEYS.has(key) ? lGet(c[key]) : (c[key] || '');
     });
   }
   async function saveContact() {
     const map = { Eyebrow:'eyebrow', Title:'title', Sub:'sub', Addr:'addr', AddrNote:'addrNote', Phone:'phone', Hours:'hours', Email:'email', Whatsapp:'whatsapp', MapSrc:'mapSrc' };
     const c = {};
     Object.entries(map).forEach(([id, key]) => {
-      c[key] = document.getElementById('ct' + id).value;
+      const val = document.getElementById('ct' + id).value;
+      c[key] = CONTACT_LANG_KEYS.has(key) ? lSet(_contactRaw[key], val) : val;
     });
-    try { await apiSave('contact', c); showToast('✅ Əlaqə bölməsi yadda saxlandı'); }
+    try { await apiSave('contact', c); _contactRaw = c; showToast('✅ Əlaqə (' + currentEditLang().toUpperCase() + ') yadda saxlandı'); }
     catch (e) { showToast('❌ ' + e.message, true); }
   }
 
@@ -1607,43 +2679,55 @@
     if (cat) products = products.filter(p => p.cat === cat);
     document.getElementById('productCountLabel').textContent = `Cəmi ${products.length} məhsul`;
     document.getElementById('productTableBody').innerHTML = products.length
-      ? products.map(p => `<tr>
+      ? products.map(p => {
+          const stock = p.stock ?? 0;
+          const stockClass = stock <= 0 ? 'out' : (stock <= 3 ? 'low' : 'in');
+          const stockText = stock <= 0 ? 'Yoxdur' : (stock + ' ədəd');
+          return `<tr>
           <td>${p.image ? `<span class="img-preview-sm"><img src="${escapeAttr(p.image)}" alt=""></span>` : `<span style="font-size:1.5rem">${p.emoji || '📦'}</span>`}</td>
           <td><strong style="color:var(--white)">${p.name}</strong></td>
           <td><span class="cat-badge">${catLabels[p.cat] || p.cat}</span></td>
           <td class="price-cell">${p.price} ₼<span style="font-size:0.75rem;color:var(--muted);font-weight:400"> /${p.unit}</span></td>
+          <td><span class="stock-tag ${stockClass}">${stockText}</span></td>
           <td style="color:var(--muted);font-size:0.82rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.desc}</td>
           <td><div class="action-btns">
             <button class="edit-btn" onclick="editProduct(${p.id})">✏️ Redaktə</button>
             <button class="del-btn" onclick="openDeleteModal(${p.id})">🗑️ Sil</button>
           </div></td>
-        </tr>`).join('')
-      : '<tr><td colspan="6"><div class="empty-state"><div class="ico">🔍</div><p>Heç bir məhsul tapılmadı</p></div></td></tr>';
+        </tr>`;
+        }).join('')
+      : '<tr><td colspan="7"><div class="empty-state"><div class="ico">🔍</div><p>Heç bir məhsul tapılmadı</p></div></td></tr>';
   }
 
   // ===== ADD / EDIT PRODUCT =====
   async function saveProduct() {
-    const name = document.getElementById('fName').value.trim();
+    const name    = document.getElementById('fName').value.trim();
+    const name_en = document.getElementById('fNameEn').value.trim() || null;
+    const name_ru = document.getElementById('fNameRu').value.trim() || null;
     const cat  = document.getElementById('fCat').value;
     const price= document.getElementById('fPrice').value.trim();
+    const stock= parseInt(document.getElementById('fStock').value, 10) || 0;
     const emoji= document.getElementById('fEmoji').value.trim() || '📦';
     const image= document.getElementById('fImage').value.trim() || null;
-    const desc = document.getElementById('fDesc').value.trim();
+    const images = _galleryF.slice();
+    const desc    = document.getElementById('fDesc').value.trim();
+    const desc_en = document.getElementById('fDescEn').value.trim() || null;
+    const desc_ru = document.getElementById('fDescRu').value.trim() || null;
     const unit = document.getElementById('fUnit').value;
     const editId = document.getElementById('editId').value;
 
-    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun!', true); return; }
+    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun (AZ)!', true); return; }
 
     try {
       const products = (await getProducts()).slice();
       if (editId) {
         const idx = products.findIndex(p => p.id == editId);
-        if (idx > -1) { products[idx] = { ...products[idx], name, cat, price, emoji, image, desc, unit }; }
+        if (idx > -1) { products[idx] = { ...products[idx], name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit }; }
         await saveProducts(products);
         showToast('✅ Məhsul yeniləndi!');
       } else {
         const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-        products.push({ id: newId, name, cat, price, emoji, image, desc, unit });
+        products.push({ id: newId, name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit });
         await saveProducts(products);
         showToast('✅ Məhsul əlavə edildi!');
       }
@@ -1658,13 +2742,25 @@
     const p = products.find(x => String(x.id) === String(id));
     if (!p) return;
     document.getElementById('eId').value = p.id;
-    document.getElementById('eName').value = p.name || '';
+    document.getElementById('eName').value    = p.name || '';
+    document.getElementById('eNameEn').value  = p.name_en || '';
+    document.getElementById('eNameRu').value  = p.name_ru || '';
     document.getElementById('eCat').value = p.cat || '';
     document.getElementById('ePrice').value = p.price || '';
+    document.getElementById('eStock').value = p.stock ?? 0;
     document.getElementById('eEmoji').value = p.emoji || '';
-    document.getElementById('eDesc').value = p.desc || '';
+    document.getElementById('eDesc').value    = p.desc || '';
+    document.getElementById('eDescEn').value  = p.desc_en || '';
+    document.getElementById('eDescRu').value  = p.desc_ru || '';
     document.getElementById('eUnit').value = p.unit || 'ədəd';
+    // AZ tab-ı aktiv et
+    document.querySelectorAll('[data-lgroup="eName"] .lang-tab, [data-lgroup="eName"].lang-tab').forEach(t => t.classList.toggle('active', t.dataset.llang === 'az'));
+    document.querySelectorAll('.lang-input[data-lgroup="eName"]').forEach(i => i.classList.toggle('active', i.dataset.llang === 'az'));
+    document.querySelectorAll('[data-lgroup="eDesc"] .lang-tab, [data-lgroup="eDesc"].lang-tab').forEach(t => t.classList.toggle('active', t.dataset.llang === 'az'));
+    document.querySelectorAll('.lang-input[data-lgroup="eDesc"]').forEach(i => i.classList.toggle('active', i.dataset.llang === 'az'));
     setEditImage(p.image || '');
+    _galleryE = Array.isArray(p.images) ? p.images.slice() : [];
+    renderGalleryGrid('e');
     document.getElementById('editProductModal').classList.add('open');
   }
   function closeEditProductModal() {
@@ -1694,19 +2790,25 @@
   function clearEditImage() { setEditImage(''); }
   async function saveEditProduct() {
     const id    = document.getElementById('eId').value;
-    const name  = document.getElementById('eName').value.trim();
+    const name     = document.getElementById('eName').value.trim();
+    const name_en  = document.getElementById('eNameEn').value.trim() || null;
+    const name_ru  = document.getElementById('eNameRu').value.trim() || null;
     const cat   = document.getElementById('eCat').value;
     const price = document.getElementById('ePrice').value.trim();
+    const stock = parseInt(document.getElementById('eStock').value, 10) || 0;
     const emoji = document.getElementById('eEmoji').value.trim() || '📦';
     const image = document.getElementById('eImage').value.trim() || null;
-    const desc  = document.getElementById('eDesc').value.trim();
+    const images = _galleryE.slice();
+    const desc     = document.getElementById('eDesc').value.trim();
+    const desc_en  = document.getElementById('eDescEn').value.trim() || null;
+    const desc_ru  = document.getElementById('eDescRu').value.trim() || null;
     const unit  = document.getElementById('eUnit').value;
-    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri doldurun!', true); return; }
+    if (!name || !cat || !price || !desc) { showToast('❌ Bütün məcburi sahələri (AZ) doldurun!', true); return; }
     try {
       const products = (await getProducts()).slice();
       const idx = products.findIndex(p => String(p.id) === String(id));
       if (idx > -1) {
-        products[idx] = { ...products[idx], name, cat, price, emoji, image, desc, unit };
+        products[idx] = { ...products[idx], name, name_en, name_ru, cat, price, stock, emoji, image, images, desc, desc_en, desc_ru, unit };
         await saveProducts(products);
         showToast('✅ Məhsul yeniləndi!');
       }
@@ -1717,13 +2819,57 @@
     }
   }
   function clearForm() {
-    ['fName','fCat','fPrice','fEmoji','fDesc','fUnit'].forEach(id => {
+    ['fName','fNameEn','fNameRu','fCat','fPrice','fStock','fEmoji','fDesc','fDescEn','fDescRu','fUnit'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
     document.getElementById('editId').value = '';
     setProductImage('');
+    _galleryF = [];
+    renderGalleryGrid('f');
     document.getElementById('formTitle').textContent = 'Yeni Məhsul Əlavə Et';
+  }
+
+  // ===== GALLERY (product multi-images) =====
+  let _galleryF = [];
+  let _galleryE = [];
+  function galleryArr(prefix) { return prefix === 'e' ? _galleryE : _galleryF; }
+  function setGalleryArr(prefix, arr) {
+    if (prefix === 'e') _galleryE = arr; else _galleryF = arr;
+  }
+  function renderGalleryGrid(prefix) {
+    const grid = document.getElementById(prefix + 'GalleryGrid');
+    if (!grid) return;
+    const arr = galleryArr(prefix);
+    grid.innerHTML = arr.map((url, i) => `
+      <div class="gallery-thumb">
+        <img src="${escapeAttr(url)}" alt="">
+        <button type="button" class="gallery-thumb-del" onclick="removeGalleryImage('${prefix}', ${i})" title="Sil">✕</button>
+      </div>
+    `).join('');
+  }
+  async function uploadGalleryImages(input, prefix) {
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+    try {
+      showToast('⏳ ' + files.length + ' şəkil yüklənir...');
+      for (const file of files) {
+        const url = await apiUpload(file);
+        galleryArr(prefix).push(url);
+      }
+      renderGalleryGrid(prefix);
+      showToast('✅ Şəkillər yükləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function removeGalleryImage(prefix, idx) {
+    const arr = galleryArr(prefix);
+    arr.splice(idx, 1);
+    setGalleryArr(prefix, arr);
+    renderGalleryGrid(prefix);
   }
   function setProductImage(url) {
     document.getElementById('fImage').value = url || '';
@@ -1781,6 +2927,54 @@
   // ===== HELPERS =====
   function escapeHtml(s) { return (s ?? '').toString().replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   function escapeAttr(s) { return (s ?? '').toString().replace(/"/g, '&quot;'); }
+
+  // ===== LANG TABS (multi-language editor) =====
+  // langInputs(cfg): renders a group of 3 language inputs with tab switcher
+  //   cfg = { field, valAz, valEn, valRu, type ('input'|'textarea'), placeholder, maxlength }
+  function langInputs(cfg) {
+    const t = cfg.type === 'textarea' ? 'textarea' : 'input';
+    const attr = cfg.type === 'textarea' ? '' : (cfg.type === 'input' ? 'type="text"' : '');
+    const ml = cfg.maxlength ? `maxlength="${cfg.maxlength}"` : '';
+    const ph = cfg.placeholder ? `placeholder="${escapeAttr(cfg.placeholder)}"` : '';
+    const groupId = 'lg_' + Math.random().toString(36).slice(2, 8);
+    const langs = [
+      { code: 'az', flag: '🇦🇿', val: cfg.valAz || '' },
+      { code: 'en', flag: '🇬🇧', val: cfg.valEn || '' },
+      { code: 'ru', flag: '🇷🇺', val: cfg.valRu || '' },
+    ];
+    const tabs = langs.map((L, i) => `
+      <button type="button" class="lang-tab${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" onclick="switchLangTab(this)"><span class="flag">${L.flag}</span>${L.code.toUpperCase()}</button>
+    `).join('');
+    const inputs = langs.map((L, i) => {
+      if (cfg.type === 'textarea') {
+        return `<textarea class="lang-input${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" data-fld="${escapeAttr(cfg.field)}_${L.code}" ${ph}>${escapeHtml(L.val)}</textarea>`;
+      }
+      return `<input class="lang-input${i === 0 ? ' active' : ''}" data-lgroup="${groupId}" data-llang="${L.code}" data-fld="${escapeAttr(cfg.field)}_${L.code}" ${attr} ${ml} ${ph} value="${escapeAttr(L.val)}">`;
+    }).join('');
+    return `<div class="lang-tabs" data-lgroup="${groupId}">${tabs}</div>${inputs}`;
+  }
+  function switchLangTab(btn) {
+    const group = btn.dataset.lgroup;
+    const lang = btn.dataset.llang;
+    document.querySelectorAll(`.lang-tab[data-lgroup="${group}"]`).forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll(`.lang-input[data-lgroup="${group}"]`).forEach(i => i.classList.toggle('active', i.dataset.llang === lang));
+  }
+  // Read the 3 values from a container (row): {az, en, ru}
+  function readLangValues(container, field) {
+    return {
+      az: container.querySelector(`[data-fld="${field}_az"]`)?.value ?? '',
+      en: container.querySelector(`[data-fld="${field}_en"]`)?.value ?? '',
+      ru: container.querySelector(`[data-fld="${field}_ru"]`)?.value ?? '',
+    };
+  }
+  // Legacy compat: normalize either string or {az,en,ru} object to a triple
+  function normLang(val) {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      return { az: val.az || '', en: val.en || '', ru: val.ru || '' };
+    }
+    return { az: (val || ''), en: '', ru: '' };
+  }
 
   // Generic confirm modal — promise-based
   function confirmAction({ title = 'Silmək istəyirsiniz?', message = 'Bu əməliyyat geri alına bilməz.', icon = '🗑️', okText = 'Bəli, sil' } = {}) {
