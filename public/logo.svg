@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Texnobəy">
+  <defs>
+    <linearGradient id="tbBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0057ff"/>
+      <stop offset="1" stop-color="#00c2ff"/>
+    </linearGradient>
+    <linearGradient id="tbGloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- brand tile -->
+  <rect width="64" height="64" rx="15" fill="url(#tbBg)"/>
+  <!-- soft gloss -->
+  <path d="M0 0 h64 v20 a44 44 0 0 1 -64 0 z" fill="url(#tbGloss)"/>
+  <!-- stylized T mark -->
+  <rect x="12" y="17" width="40" height="9"  rx="2.5" fill="#ffffff"/>
+  <rect x="27" y="17" width="10" height="34" rx="2.5" fill="#ffffff"/>
+  <!-- accent dot: subtle 'bəy' cue -->
+  <circle cx="47" cy="44" r="4" fill="#ffffff" opacity="0.9"/>
+</svg>

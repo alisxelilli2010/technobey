@@ -89,9 +89,9 @@
     text-decoration: none;
   }
   .sidebar-logo-icon {
-    width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--cyan));
-    border-radius: 8px; display: grid; place-items: center; font-size: 1rem;
+    width: 32px; height: 32px; display: grid; place-items: center;
   }
+  .sidebar-logo-icon img, .sidebar-logo-icon svg { width: 100%; height: 100%; display: block; }
   .sidebar-logo span { color: var(--white); }
   .sidebar-nav { padding: 20px 12px; flex: 1; }
   .nav-group-label {
@@ -537,7 +537,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <a class="sidebar-logo" href="{{ url('/admin/dashboard') }}" style="cursor:pointer;text-decoration:none;color:inherit">
-      <div class="sidebar-logo-icon">💻</div>
+      <div class="sidebar-logo-icon"><img src="{{ asset('logo.svg') }}" alt="Texnobəy" loading="lazy"></div>
       Texno<span>bəy</span>
     </a>
     <nav class="sidebar-nav">
@@ -599,6 +599,9 @@
         <span class="topbar-home-ico">🏠</span> Əsas səhifə
       </a>
       <div class="topbar-right">
+        <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Rejimi dəyiş" aria-label="Rejimi dəyiş">
+          <span id="themeToggleIco">🌙</span>
+        </button>
         <a class="user-badge" id="userBadge" href="{{ url('/admin/profile') }}" title="Profil" style="text-decoration:none">
           <div class="user-badge-avatar" id="userBadgeAvatar"><span id="userBadgeInitial">?</span></div>
           <div class="user-badge-name" id="userBadgeName">…</div>

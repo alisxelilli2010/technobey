@@ -8,12 +8,22 @@
       <stop offset="0" stop-color="#0057ff"/>
       <stop offset="1" stop-color="#00c2ff"/>
     </linearGradient>
+    <radialGradient id="glow" cx="0.15" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#0057ff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#0057ff" stop-opacity="0"/>
+    </radialGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect x="80" y="80" width="120" height="120" rx="26" fill="url(#accent)"/>
-  <text x="140" y="164" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-weight="800" font-size="58" fill="#ffffff">Tb</text>
-  <text x="80" y="330" font-family="Inter, Segoe UI, sans-serif" font-weight="800" font-size="88" fill="#ffffff">Texno<tspan fill="#00c2ff">bəy</tspan></text>
-  <text x="80" y="400" font-family="Inter, Segoe UI, sans-serif" font-weight="500" font-size="34" fill="#b8c1d9">Bakıda №1 Texnologiya Mağazası</text>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <!-- brand mark -->
+  <g transform="translate(80,80) scale(1.9)">
+    <rect width="64" height="64" rx="15" fill="url(#accent)"/>
+    <rect x="12" y="17" width="40" height="9"  rx="2.5" fill="#ffffff"/>
+    <rect x="27" y="17" width="10" height="34" rx="2.5" fill="#ffffff"/>
+    <circle cx="47" cy="44" r="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+  <text x="80" y="340" font-family="Inter, Segoe UI, sans-serif" font-weight="800" font-size="88" fill="#ffffff">Texno<tspan fill="#00c2ff">bəy</tspan></text>
+  <text x="80" y="405" font-family="Inter, Segoe UI, sans-serif" font-weight="500" font-size="34" fill="#b8c1d9">Bakıda №1 Texnologiya Mağazası</text>
   <text x="80" y="470" font-family="Inter, Segoe UI, sans-serif" font-weight="400" font-size="26" fill="#8a94b0">Kompüter · Printer · Proyektor · Servis</text>
   <text x="80" y="560" font-family="Inter, Segoe UI, sans-serif" font-weight="600" font-size="24" fill="#00c2ff">texnobey.az</text>
 </svg>

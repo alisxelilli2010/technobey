@@ -19,7 +19,7 @@
 
 <nav class="navbar" id="navbar">
   <a href="{{ url('/') }}" class="logo">
-    <div class="logo-icon">💻</div>
+    <div class="logo-icon"><img src="{{ asset('logo.svg') }}" alt="Texnobəy" loading="lazy"></div>
     Texno<span>bəy</span>
   </a>
   <ul class="nav-links">

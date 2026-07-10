@@ -127,7 +127,7 @@
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
   <a href="#" class="logo" onclick="event.preventDefault(); history.replaceState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: 'smooth' });">
-    <div class="logo-icon">💻</div>
+    <div class="logo-icon"><img src="{{ asset('logo.svg') }}" alt="Texnobəy" loading="lazy"></div>
     Texno<span>bəy</span>
   </a>
   <ul class="nav-links">
@@ -137,6 +137,7 @@
     <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
     <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
     <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
+    <li><button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" aria-label="{{ __('site.nav.theme') }}"><span id="themeBtnIco">🌙</span></button></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="{{ __('site.nav.menu') }}">
     <span></span><span></span><span></span>
@@ -152,6 +153,7 @@
   <a href="#contact" onclick="closeMobile()">{{ __('site.nav.contact') }}</a>
   <a href="{{ route('order.status') }}" onclick="closeMobile()">{{ __('site.nav.track') }}</a>
   <a href="#order" onclick="closeMobile()" class="btn-primary">{{ __('site.nav.order') }}</a>
+  <button type="button" class="theme-btn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" aria-label="{{ __('site.nav.theme') }}" style="margin-top:8px"><span id="themeBtnIcoMobile">🌙</span></button>
 </div>
 
 <!-- HERO -->
@@ -573,7 +575,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="#" class="logo" onclick="event.preventDefault(); history.replaceState(null, '', window.location.pathname); window.scrollTo({ top: 0, behavior: 'smooth' });">
-          <div class="logo-icon">💻</div>
+          <div class="logo-icon"><img src="{{ asset('logo.svg') }}" alt="Texnobəy" loading="lazy"></div>
           Texno<span>bəy</span>
         </a>
         <p>{{ __('site.footer.about') }}</p>
