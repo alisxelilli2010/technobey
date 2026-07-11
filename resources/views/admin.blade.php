@@ -526,6 +526,7 @@
     <p>İdarəetmə panelinə daxil olmaq üçün məlumatları daxil edin</p>
     <input type="text" id="loginUser" placeholder="İstifadəçi adı" autocomplete="username" oninput="document.getElementById('loginErr').style.display='none'">
     <input type="password" id="loginPass" placeholder="Şifrə" autocomplete="current-password" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="text" id="loginOtp" placeholder="🔐 Google Authenticator 6 rəqəmli kod" autocomplete="one-time-code" inputmode="numeric" maxlength="8" style="display:none;letter-spacing:2px;text-align:center;font-family:monospace" oninput="document.getElementById('loginErr').style.display='none'" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Daxil ol →</button>
     <div class="login-err" id="loginErr">❌ İstifadəçi adı və ya şifrə yanlışdır</div>
   </div>
@@ -1073,6 +1074,15 @@
               <button class="cancel-btn" onclick="clearPassFields()">Təmizlə</button>
             </div>
           </div>
+
+          <div class="panel">
+            <h3>🔐 Google Authenticator (2FA)
+              <small id="twofaStatusPill" style="margin-left:auto"></small>
+            </h3>
+            <div id="twofaBody">
+              <div style="color:var(--muted);font-size:0.88rem">Yüklənir…</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1369,12 +1379,16 @@
   async function doLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value.trim();
+    const otpEl = document.getElementById('loginOtp');
+    const otp = otpEl.value.trim();
     if (!u || !p) {
       document.getElementById('loginErr').textContent = '❌ İstifadəçi adı və şifrə boş ola bilməz';
       document.getElementById('loginErr').style.display = 'block';
       return;
     }
     try {
+      const body = { username: u, password: p };
+      if (otp) body.otp = otp;
       const res = await fetch('/admin/login', {
         method: 'POST',
         headers: {
@@ -1383,17 +1397,27 @@
           'X-CSRF-TOKEN': CSRF_TOKEN,
           'X-Requested-With': 'XMLHttpRequest',
         },
-        body: JSON.stringify({ username: u, password: p }),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        let msg = '❌ İstifadəçi adı və ya şifrə yanlışdır';
-        try { const j = await res.json(); if (j.error) msg = '❌ ' + j.error; } catch {}
-        document.getElementById('loginErr').textContent = msg;
-        document.getElementById('loginErr').style.display = 'block';
+      let j = null;
+      try { j = await res.json(); } catch {}
+      if (res.ok && j && j.ok) { location.reload(); return; }
+      // 2FA tələb olunur — OTP sahəsini göstər
+      if (j && j.otp_required) {
+        otpEl.style.display = 'block';
+        otpEl.focus();
+        const err = document.getElementById('loginErr');
+        err.textContent = j.error ? ('❌ ' + j.error) : '🔐 Google Authenticator kodunu daxil edin';
+        err.style.color = j.error ? '#f87171' : 'var(--cyan)';
+        err.style.display = 'block';
         return;
       }
-      // Sessiya yaradıldıqdan sonra yeni CSRF token almaq üçün səhifəni tam yenidən yükləyirik
-      location.reload();
+      let msg = '❌ İstifadəçi adı və ya şifrə yanlışdır';
+      if (j && j.error) msg = '❌ ' + j.error;
+      const err = document.getElementById('loginErr');
+      err.textContent = msg;
+      err.style.color = '#f87171';
+      err.style.display = 'block';
     } catch (e) {
       document.getElementById('loginErr').textContent = '❌ Server xətası: ' + e.message;
       document.getElementById('loginErr').style.display = 'block';
@@ -1474,6 +1498,7 @@
     renderProfileAvatar(u.avatar || '');
     renderUserWidget(u);
     clearPassFields();
+    load2fa().catch(() => {});
   }
   function renderProfileAvatar(url) {
     const box = document.getElementById('profAvatar');
@@ -1567,6 +1592,174 @@
       }
       clearPassFields();
       showToast('✅ Şifrə uğurla dəyişdirildi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+
+  // ===== 2FA (Google Authenticator) =====
+  async function load2fa() {
+    const body = document.getElementById('twofaBody');
+    const pill = document.getElementById('twofaStatusPill');
+    if (!body) return;
+    try {
+      const res = await fetch('/api/2fa/status', { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('Yüklənmədi');
+      const s = await res.json();
+      if (s.enabled) {
+        pill.innerHTML = '<span style="background:rgba(22,163,74,0.15);color:#4ade80;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;text-transform:uppercase">Aktiv</span>';
+        body.innerHTML = `
+          <div class="info-note" style="background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.25);color:#4ade80">
+            ✅ <strong>2FA aktivdir.</strong> Hər dəfə giriş edərkən Google Authenticator-dən 6 rəqəmli kod tələb olunacaq.
+          </div>
+          <div class="form-row">
+            <div class="form-grp">
+              <label>Cari şifrə</label>
+              <input type="password" id="twofaDisPass" autocomplete="current-password">
+            </div>
+            <div class="form-grp">
+              <label>Authenticator kodu</label>
+              <input type="text" id="twofaDisOtp" inputmode="numeric" maxlength="8" placeholder="123456" style="letter-spacing:2px;font-family:monospace">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="save-btn" style="background:var(--red);box-shadow:none" onclick="disable2fa()">🔓 2FA-nı söndür</button>
+          </div>`;
+      } else if (s.pending) {
+        pill.innerHTML = '<span style="background:rgba(217,119,6,0.15);color:#fbbf24;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;text-transform:uppercase">Yarımçıq</span>';
+        body.innerHTML = `
+          <div class="info-note" style="background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.25);color:#fbbf24">
+            ⚠️ Quraşdırma başlandı amma təsdiqlənmədi. Yenidən başlayın və ya QR kodu skan edib kodu daxil edin.
+          </div>
+          <div class="modal-actions">
+            <button class="add-btn" onclick="start2faSetup()">🔄 Yenidən başla</button>
+          </div>`;
+      } else {
+        pill.innerHTML = '<span style="background:rgba(123,141,176,0.15);color:var(--muted);padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;text-transform:uppercase">Söndürülüb</span>';
+        body.innerHTML = `
+          <div class="info-note">
+            ℹ️ İki mərhələli təhlükəsizliyi aktivləşdirmək üçün Google Authenticator (və ya Authy, Microsoft Authenticator) tətbiqi lazımdır.
+          </div>
+          <div class="modal-actions">
+            <button class="add-btn" onclick="start2faSetup()">🔐 2FA-nı aktivləşdir</button>
+          </div>`;
+      }
+    } catch (e) {
+      body.innerHTML = '<div style="color:#f87171;font-size:0.85rem">❌ ' + escapeHtml(e.message) + '</div>';
+    }
+  }
+
+  async function start2faSetup() {
+    const body = document.getElementById('twofaBody');
+    body.innerHTML = '<div style="color:var(--muted);font-size:0.88rem">⏳ QR kod hazırlanır…</div>';
+    try {
+      const res = await fetch('/api/2fa/setup', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Xəta baş verdi';
+        try { const j = await res.json(); if (j.error) msg = j.error; } catch {}
+        throw new Error(msg);
+      }
+      const j = await res.json();
+      // QR kod ya data URI (data:image/...;base64,...), ya da SVG XML kimi gələ bilər
+      const qrRaw = (j.qr || '').trim();
+      let qrHtml = '';
+      if (qrRaw.startsWith('data:')) {
+        qrHtml = `<img src="${escapeAttr(qrRaw)}" alt="2FA QR" width="200" height="200" style="display:block;width:200px;height:200px">`;
+      } else if (qrRaw.startsWith('<svg') || qrRaw.startsWith('<?xml')) {
+        qrHtml = `<div style="width:200px;height:200px;display:block">${qrRaw}</div>`;
+      } else {
+        // Ehtiyat: base64 kimi ehtimal edilir
+        qrHtml = `<img src="data:image/png;base64,${escapeAttr(qrRaw)}" alt="2FA QR" width="200" height="200" style="display:block;width:200px;height:200px">`;
+      }
+      body.innerHTML = `
+        <div class="info-note">
+          <strong>Addım 1:</strong> Google Authenticator tətbiqini açın və QR kodu skan edin.
+          <br><strong>Addım 2:</strong> Tətbiqdə görünən 6 rəqəmli kodu aşağıda daxil edin.
+        </div>
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px">
+          <div style="background:#fff;padding:10px;border-radius:12px;line-height:0;flex-shrink:0">
+            ${qrHtml}
+          </div>
+          <div style="flex:1;min-width:220px">
+            <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Manual giriş açarı</div>
+            <div style="font-family:monospace;font-size:0.9rem;color:var(--cyan);word-break:break-all;background:rgba(0,194,255,0.08);border:1px dashed rgba(0,194,255,0.3);border-radius:8px;padding:10px">${escapeHtml(j.secret)}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:8px">QR skan edə bilmirsinizsə, bu açarı əl ilə daxil edin.</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-grp full">
+            <label>Tətbiqdən 6 rəqəmli kod</label>
+            <input type="text" id="twofaConfOtp" inputmode="numeric" maxlength="8" placeholder="123456" style="letter-spacing:4px;font-family:monospace;text-align:center;font-size:1.1rem" autofocus>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="save-btn" onclick="confirm2fa()">✅ Təsdiq et və aktivləşdir</button>
+          <button class="cancel-btn" onclick="load2fa()">Ləğv et</button>
+        </div>`;
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+      load2fa();
+    }
+  }
+
+  async function confirm2fa() {
+    const otp = document.getElementById('twofaConfOtp').value.trim();
+    if (!otp) { showToast('❌ Kod boş ola bilməz', true); return; }
+    try {
+      const res = await fetch('/api/2fa/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ otp }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Kod yanlışdır';
+        try { const j = await res.json(); if (j.error) msg = j.error; } catch {}
+        throw new Error(msg);
+      }
+      showToast('✅ 2FA aktivləşdirildi');
+      await load2fa();
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+
+  async function disable2fa() {
+    const password = document.getElementById('twofaDisPass').value;
+    const otp = document.getElementById('twofaDisOtp').value.trim();
+    if (!password || !otp) { showToast('❌ Şifrə və kod məcburidir', true); return; }
+    try {
+      const res = await fetch('/api/2fa/disable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ password, otp }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) {
+        let msg = 'Söndürülmədi';
+        try { const j = await res.json(); if (j.error) msg = j.error; } catch {}
+        throw new Error(msg);
+      }
+      showToast('🔓 2FA söndürüldü');
+      await load2fa();
     } catch (e) {
       showToast('❌ ' + e.message, true);
     }

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use PragmaRX\Google2FAQRCode\Google2FA;
 
 $sections = ['hero', 'trust', 'services', 'why', 'about', 'contact', 'products', 'orders'];
 
@@ -50,10 +51,21 @@ Route::post('/admin/login', function (Request $request) {
     $data = $request->validate([
         'username' => 'required|string|max:120',
         'password' => 'required|string|max:200',
+        'otp'      => 'nullable|string|max:10',
     ]);
     $user = User::where('name', $data['username'])->first();
     if (!$user || !Hash::check($data['password'], $user->password)) {
         return response()->json(['error' => 'İstifadəçi adı və ya şifrə yanlışdır'], 401);
+    }
+    if ($user->hasTwoFactorEnabled()) {
+        $otp = preg_replace('/\s+/', '', (string) ($data['otp'] ?? ''));
+        if ($otp === '') {
+            return response()->json(['otp_required' => true], 200);
+        }
+        $g2fa = new Google2FA();
+        if (!$g2fa->verifyKey($user->two_factor_secret, $otp, 1)) {
+            return response()->json(['otp_required' => true, 'error' => '2FA kodu yanlışdır'], 401);
+        }
     }
     Auth::login($user, remember: false);
     $request->session()->regenerate();
@@ -310,6 +322,82 @@ Route::post('/api/profile/password', function (Request $request) {
         return response()->json(['error' => 'Cari şifrə yanlışdır'], 422);
     }
     $u->password = Hash::make($data['new_password']);
+    $u->save();
+    return response()->json(['ok' => true]);
+})->middleware('auth');
+
+// ===== TWO-FACTOR AUTHENTICATION (Google Authenticator) =====
+Route::get('/api/2fa/status', function () {
+    $u = Auth::user();
+    return response()->json([
+        'enabled' => $u->hasTwoFactorEnabled(),
+        'pending' => !empty($u->two_factor_secret) && is_null($u->two_factor_confirmed_at),
+    ]);
+})->middleware('auth');
+
+Route::post('/api/2fa/setup', function (Request $request) {
+    $u = Auth::user();
+    if ($u->hasTwoFactorEnabled()) {
+        return response()->json(['error' => '2FA artıq aktivdir'], 422);
+    }
+    $g2fa = new Google2FA();
+    $secret = $g2fa->generateSecretKey(32);
+    $u->two_factor_secret = $secret;
+    $u->two_factor_confirmed_at = null;
+    $u->save();
+
+    $issuer  = config('app.name', 'Texnobəy') . ' Admin';
+    $account = $u->email ?: $u->name;
+    $qrInline = $g2fa->getQRCodeInline($issuer, $account, $secret);
+
+    return response()->json([
+        'secret'   => $secret,
+        'qr'       => $qrInline,
+        'otpauth'  => "otpauth://totp/" . rawurlencode($issuer) . ":" . rawurlencode($account)
+                    . "?secret={$secret}&issuer=" . rawurlencode($issuer),
+    ]);
+})->middleware('auth');
+
+Route::post('/api/2fa/confirm', function (Request $request) {
+    $u = Auth::user();
+    $data = $request->validate([
+        'otp' => 'required|string|max:10',
+    ]);
+    if (empty($u->two_factor_secret)) {
+        return response()->json(['error' => 'Əvvəlcə 2FA quraşdırılmasını başladın'], 422);
+    }
+    if ($u->hasTwoFactorEnabled()) {
+        return response()->json(['error' => '2FA artıq aktivdir'], 422);
+    }
+    $g2fa = new Google2FA();
+    $otp = preg_replace('/\s+/', '', $data['otp']);
+    if (!$g2fa->verifyKey($u->two_factor_secret, $otp, 1)) {
+        return response()->json(['error' => 'Kod yanlışdır və ya vaxtı keçib'], 422);
+    }
+    $u->two_factor_confirmed_at = now();
+    $u->save();
+    return response()->json(['ok' => true]);
+})->middleware('auth');
+
+Route::post('/api/2fa/disable', function (Request $request) {
+    $u = Auth::user();
+    $data = $request->validate([
+        'password' => 'required|string',
+        'otp'      => 'required|string|max:10',
+    ]);
+    if (!Hash::check($data['password'], $u->password)) {
+        return response()->json(['error' => 'Şifrə yanlışdır'], 422);
+    }
+    if (!$u->hasTwoFactorEnabled()) {
+        return response()->json(['error' => '2FA aktiv deyil'], 422);
+    }
+    $g2fa = new Google2FA();
+    $otp = preg_replace('/\s+/', '', $data['otp']);
+    if (!$g2fa->verifyKey($u->two_factor_secret, $otp, 1)) {
+        return response()->json(['error' => '2FA kodu yanlışdır'], 422);
+    }
+    $u->two_factor_secret = null;
+    $u->two_factor_confirmed_at = null;
     $u->save();
     return response()->json(['ok' => true]);
 })->middleware('auth');
