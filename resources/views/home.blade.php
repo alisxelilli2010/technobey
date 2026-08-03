@@ -291,7 +291,8 @@
           ($catNames[$p['cat'] ?? ''] ?? '')
         );
       @endphp
-      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}" data-search="{{ $searchBlob }}" data-product-id="{{ $p['id'] ?? 0 }}">
+      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}" data-search="{{ $searchBlob }}" data-product-id="{{ $p['id'] ?? 0 }}"
+           data-name="{{ $pName }}" data-price="{{ $p['price'] ?? '' }}" data-unit="{{ $p['unit'] ?? 'ədəd' }}">
         <div class="product-img-wrap">
           @if (!empty($gallery))
             <div class="product-gallery">
@@ -328,16 +329,34 @@
           <p>{{ $pDesc }}</p>
           <div class="product-footer">
             <div class="price">{{ $p['price'] ?? '' }} ₼ <span>/ {{ $unitMap[$p['unit'] ?? 'ədəd'] ?? ($p['unit'] ?? '') }}</span></div>
-            @if ($stock <= 0)
-              <button class="btn-order btn-order-disabled" disabled>{{ __('site.stock.out') }}</button>
-            @else
-              <a href="#order" class="btn-order"
-                 onclick="selectProduct(this, '{{ addslashes($pName) }}', '{{ $p['cat'] ?? '' }}', '{{ $p['price'] ?? '' }}', '{{ $p['unit'] ?? 'ədəd' }}')">{{ __('site.nav.order') }}</a>
-            @endif
+            <div class="product-actions">
+              <button type="button" class="btn-details" onclick="openProductDetail(this)">{{ __('site.nav.details') }}</button>
+              @if ($stock <= 0)
+                <button class="btn-order btn-order-disabled" disabled>{{ __('site.stock.out') }}</button>
+              @else
+                <a href="#order" class="btn-order"
+                   onclick="selectProduct(this, '{{ addslashes($pName) }}', '{{ $p['cat'] ?? '' }}', '{{ $p['price'] ?? '' }}', '{{ $p['unit'] ?? 'ədəd' }}')">{{ __('site.nav.order') }}</a>
+              @endif
+            </div>
           </div>
         </div>
       </div>
       @endforeach
+    </div>
+  </div>
+
+  <!-- Məhsul detalları modal -->
+  <div class="pd-modal" id="productDetailModal" onclick="closeProductDetail(event)">
+    <div class="pd-dialog" role="dialog" aria-modal="true">
+      <button type="button" class="pd-close" onclick="closeProductDetail()" aria-label="{{ __('site.nav.close') }}">✕</button>
+      <div class="pd-media" id="pdMedia"></div>
+      <div class="pd-info">
+        <div class="pd-cat" id="pdCat"></div>
+        <h3 class="pd-name" id="pdName"></h3>
+        <div class="pd-price" id="pdPrice"></div>
+        <div class="pd-desc" id="pdDesc"></div>
+        <div class="pd-actions" id="pdActions"></div>
+      </div>
     </div>
   </div>
 </section>

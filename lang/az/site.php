@@ -7,6 +7,8 @@ return [
     'nav.about'       => 'Haqqımızda',
     'nav.contact'     => 'Əlaqə',
     'nav.order'       => 'Sifariş et →',
+    'nav.details'     => 'Ətraflı',
+    'nav.close'       => 'Bağla',
     'nav.track'       => 'Sifariş izləmə',
     'nav.theme'       => 'Rejimi dəyiş',
     'nav.language'    => 'Dil',

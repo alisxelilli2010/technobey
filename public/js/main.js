@@ -154,12 +154,109 @@ function filterProducts() {
     const catMatch = _activeCat === 'all' || card.dataset.cat === _activeCat;
     const searchMatch = !q || (card.dataset.search || '').includes(q);
     const show = catMatch && searchMatch;
-    card.style.display = show ? 'block' : 'none';
+    card.style.display = show ? 'flex' : 'none';
     if (show) { visible++; card.style.animation = 'none'; card.offsetHeight; card.style.animation = 'fadeIn 0.3s ease'; }
   });
   const empty = document.getElementById('productsEmpty');
   if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
 }
+
+// ===== PRODUCT DETAIL MODAL =====
+let _pdImages = [];
+function pdSetImg(idx) {
+  const main = document.getElementById('pdMainImg');
+  if (main && _pdImages[idx]) main.src = _pdImages[idx];
+  document.querySelectorAll('#pdMedia .pd-thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
+}
+function openProductDetail(btn) {
+  const card = btn.closest('.product-card');
+  if (!card) return;
+  const name = card.dataset.name || card.querySelector('h3')?.textContent || '';
+  const cat = card.querySelector('.product-cat')?.textContent || '';
+  const priceHtml = card.querySelector('.price')?.innerHTML || '';
+  const desc = card.querySelector('.product-body > p')?.textContent || '';
+
+  document.getElementById('pdCat').textContent = cat;
+  document.getElementById('pdName').textContent = name;
+  document.getElementById('pdPrice').innerHTML = priceHtml;
+  document.getElementById('pdDesc').textContent = desc;
+
+  // Media: qalereya şəkilləri və ya emoji
+  const imgs = Array.from(card.querySelectorAll('.product-gallery-img'))
+    .map(i => i.getAttribute('src')).filter(Boolean);
+  const media = document.getElementById('pdMedia');
+  _pdImages = imgs;
+  if (imgs.length) {
+    const main = document.createElement('div');
+    main.className = 'pd-main';
+    const img = document.createElement('img');
+    img.id = 'pdMainImg'; img.src = imgs[0]; img.alt = name;
+    main.appendChild(img);
+    media.innerHTML = '';
+    media.appendChild(main);
+    if (imgs.length > 1) {
+      const thumbs = document.createElement('div');
+      thumbs.className = 'pd-thumbs';
+      imgs.forEach((src, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pd-thumb' + (i === 0 ? ' active' : '');
+        b.onclick = () => pdSetImg(i);
+        const ti = document.createElement('img');
+        ti.src = src; ti.alt = '';
+        b.appendChild(ti);
+        thumbs.appendChild(b);
+      });
+      media.appendChild(thumbs);
+    }
+  } else {
+    const emoji = card.querySelector('.product-img')?.textContent?.trim() || '📦';
+    media.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'pd-emoji';
+    box.textContent = emoji;
+    media.appendChild(box);
+  }
+
+  // Sifariş düyməsi — kartdakı mövcud düymənin vəziyyətini təkrarla
+  const cardOrder = card.querySelector('.btn-order');
+  const isDisabled = cardOrder && cardOrder.classList.contains('btn-order-disabled');
+  const orderText = cardOrder ? cardOrder.textContent.trim() : 'Sifariş et →';
+  const actions = document.getElementById('pdActions');
+  actions.innerHTML = '';
+  if (isDisabled) {
+    const b = document.createElement('button');
+    b.className = 'btn-order btn-order-disabled';
+    b.disabled = true;
+    b.textContent = orderText;
+    actions.appendChild(b);
+  } else {
+    const a = document.createElement('a');
+    a.href = '#order';
+    a.className = 'btn-order';
+    a.textContent = orderText;
+    a.onclick = () => {
+      selectProduct(a, name, card.dataset.cat || '', card.dataset.price || '', card.dataset.unit || 'ədəd');
+      closeProductDetail();
+    };
+    actions.appendChild(a);
+  }
+
+  document.getElementById('productDetailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProductDetail(e) {
+  // Overlay-ə klik olduqda bağla; dialog daxilinə klikləri buraxma
+  if (e && e.target && e.target.id !== 'productDetailModal') return;
+  document.getElementById('productDetailModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const m = document.getElementById('productDetailModal');
+    if (m && m.classList.contains('open')) closeProductDetail();
+  }
+});
 
 // Product image gallery
 function galleryTo(dot, idx) {
