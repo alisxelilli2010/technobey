@@ -1468,6 +1468,8 @@
     return v || '';
   }
   function lSet(_current, newVal) { return newVal; }
+  // Site is single-language (AZ) after multilingual columns were removed.
+  function currentEditLang() { return 'az'; }
 
   // ===== USER WIDGET =====
   let _currentUser = null;
@@ -1838,6 +1840,20 @@
       showToast('✅ Kateqoriyalar yeniləndi');
     } catch (e) {
       showToast('❌ ' + e.message, true);
+    }
+  }
+  // Bir <select>-ə dəyər təyin edir; əgər uyğun <option> yoxdursa (məs. kateqoriya
+  // silinib və ya köhnə formatda saxlanıb), onu müvəqqəti əlavə edir ki, dəyər itməsin.
+  function setSelectValue(sel, val) {
+    if (!sel) return;
+    val = (val === null || val === undefined) ? '' : String(val);
+    sel.value = val;
+    if (val && sel.value !== val) {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val;
+      sel.appendChild(opt);
+      sel.value = val;
     }
   }
   function refreshProductCategoryOptions() {
@@ -2888,7 +2904,7 @@
     if (!p) return;
     document.getElementById('eId').value = p.id;
     document.getElementById('eName').value  = p.name || '';
-    document.getElementById('eCat').value   = p.cat || '';
+    setSelectValue(document.getElementById('eCat'), p.cat || '');
     document.getElementById('ePrice').value = p.price || '';
     document.getElementById('eStock').value = p.stock ?? 0;
     document.getElementById('eEmoji').value = p.emoji || '';
