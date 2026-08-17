@@ -25,8 +25,11 @@
 <meta name="twitter:title" content="{{ __('site.track.title') }} — Texnobəy">
 <meta name="twitter:description" content="Sifariş kodunuzla sifariş statusunu Texnobəy-də onlayn izləyin.">
 <meta name="twitter:image" content="{{ asset('og-image.png') }}">
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+<link rel="manifest" href="{{ asset('site.webmanifest') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">

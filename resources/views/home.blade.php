@@ -138,10 +138,14 @@
 <meta name="geo.placename" content="Bakı">
 <meta name="format-detection" content="telephone=yes">
 
-<!-- Favicons -->
+<!-- Favicons — Google axtarış nəticəsi üçün ən azı 48x48 ICO/PNG lazımdır,
+     apple-touch-icon isə mütləq PNG olmalıdır (iOS SVG qəbul etmir) -->
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-<link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
 <script>(function(){try{if(!localStorage.getItem('tb_theme_v2')){localStorage.removeItem('tb_theme');localStorage.setItem('tb_theme_v2','1');}var t=localStorage.getItem('tb_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
