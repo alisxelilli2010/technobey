@@ -7,7 +7,24 @@
 <meta name="description" content="Sifariş kodunuzla sifariş statusunu Texnobəy-də onlayn izləyin.">
 <meta name="robots" content="noindex, follow">
 <meta name="theme-color" content="#0057ff">
-<link rel="canonical" href="{{ url()->current() }}">
+{{-- Sorğu parametri (?code=) kanonik URL-ə düşməsin --}}
+<link rel="canonical" href="{{ route('order.status') }}">
+
+<!-- Open Graph / Twitter (linki paylaşanda düzgün önizləmə) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Texnobəy">
+<meta property="og:locale" content="az_AZ">
+<meta property="og:url" content="{{ route('order.status') }}">
+<meta property="og:title" content="{{ __('site.track.title') }} — Texnobəy">
+<meta property="og:description" content="Sifariş kodunuzla sifariş statusunu Texnobəy-də onlayn izləyin.">
+<meta property="og:image" content="{{ asset('og-image.png') }}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ __('site.track.title') }} — Texnobəy">
+<meta name="twitter:description" content="Sifariş kodunuzla sifariş statusunu Texnobəy-də onlayn izləyin.">
+<meta name="twitter:image" content="{{ asset('og-image.png') }}">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">

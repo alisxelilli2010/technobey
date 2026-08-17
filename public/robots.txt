@@ -1,7 +1,19 @@
 User-agent: *
 Allow: /
+
+# Admin panel və daxili API indeksləşdirilməsin
 Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
+
+# Sifariş izləmə səhifəsi şəxsi məlumat qaytarır (səhifə özü də noindex-dir)
+Disallow: /order-status
+
+# Şəkillər və statik fayllar indeksləşsin
+Allow: /uploads/
+Allow: /css/
+Allow: /js/
+Allow: /logo.svg
+Allow: /og-image.png
 
 Sitemap: https://texnobey.az/sitemap.xml

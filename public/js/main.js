@@ -430,27 +430,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.scrollTo({ top: 0, behavior: 'auto' });
 
-  // Yalnız istifadəçinin özü hərəkət edərsə ləğv edirik
+  // Yalnız istifadəçinin özü sürüşdürəndə ləğv edirik.
+  // Mobil üçün `touchstart` yox, `touchmove` — sadə toxunuş sürüşməni dayandırmasın.
   let cancelled = false;
   const cancel = () => { cancelled = true; };
-  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev =>
+  ['wheel', 'touchmove', 'keydown'].forEach(ev =>
     window.addEventListener(ev, cancel, { once: true, passive: true })
   );
 
-  // Şəkillər yüklənib layout oturandan sonra sürüşürük, sonra mövqeyi dəqiqləşdiririk
-  const go = () => {
+  // Mobil internetdə `load` çox gec gələ bilər, ona görə tez sürüşürük;
+  // sonra şəkillər layout-u tərpədibsə mövqeyi sakitcə dəqiqləşdiririk.
+  const settle = (delay) => setTimeout(() => {
+    if (cancelled) return;
+    const want = productsScrollTop();
+    if (want !== null && Math.abs(window.scrollY - want) > 8) scrollToProducts('auto');
+  }, delay);
+
+  setTimeout(() => {
     if (cancelled) return;
     scrollToProducts('smooth');
-    // Gec yüklənən şəkillər hədəfi sürüşdürübsə, düzəlişi bir dəfə təkrar edirik
-    setTimeout(() => {
-      if (cancelled) return;
-      const want = productsScrollTop();
-      if (want !== null && Math.abs(window.scrollY - want) > 8) scrollToProducts('auto');
-    }, 1200);
-  };
-  const start = () => setTimeout(go, 600);
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start, { once: true });
+    settle(1200);
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', () => settle(300), { once: true });
+    }
+  }, 350);
 });
 
 // Fade-in on scroll

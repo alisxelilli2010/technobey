@@ -558,29 +558,63 @@ Route::get('/order-status', function (Request $request) {
     ]);
 })->name('order.status');
 
-// ===== SITEMAP =====
+// ===== SITEMAP (dinamik) =====
+// Sayt tək səhifəlidir — məhsulların ayrıca URL-i yoxdur, ona görə `/` üçün
+// image sitemap yazırıq: Google Şəkillər məhsul şəkillərini beləcə indeksləyir.
+// `lastmod` real olaraq məhsul cədvəlindən və bölmə JSON fayllarından götürülür.
 Route::get('/sitemap.xml', function () {
-    $urls = [
-        ['loc' => url('/'),              'changefreq' => 'daily',   'priority' => '1.0'],
-        ['loc' => url('/#services'),     'changefreq' => 'monthly', 'priority' => '0.8'],
-        ['loc' => url('/#products'),     'changefreq' => 'weekly',  'priority' => '0.9'],
-        ['loc' => url('/#about'),        'changefreq' => 'yearly',  'priority' => '0.6'],
-        ['loc' => url('/#contact'),      'changefreq' => 'yearly',  'priority' => '0.6'],
-        ['loc' => url('/order-status'),  'changefreq' => 'monthly', 'priority' => '0.5'],
-    ];
-    $today = now()->toDateString();
+    $abs = function (?string $src) {
+        $src = trim((string) $src);
+        if ($src === '') return null;
+        return \Illuminate\Support\Str::startsWith($src, ['http://', 'https://']) ? $src : url($src);
+    };
 
-    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    foreach ($urls as $u) {
-        $xml .= "  <url>\n";
-        $xml .= "    <loc>" . htmlspecialchars($u['loc']) . "</loc>\n";
-        $xml .= "    <lastmod>{$today}</lastmod>\n";
-        $xml .= "    <changefreq>{$u['changefreq']}</changefreq>\n";
-        $xml .= "    <priority>{$u['priority']}</priority>\n";
-        $xml .= "  </url>\n";
+    $products = Product::orderByDesc('updated_at')->get(['id', 'name', 'image', 'images', 'updated_at']);
+
+    // Ən son dəyişiklik: məhsullar + storage-dakı bölmə məzmunu
+    $lastmod = $products->max('updated_at');
+    foreach (glob(storage_path('app/site/*.json')) ?: [] as $file) {
+        $ts = \Illuminate\Support\Carbon::createFromTimestamp(filemtime($file));
+        if (!$lastmod || $ts->greaterThan($lastmod)) $lastmod = $ts;
     }
+    $lastmod = ($lastmod ?: now())->toAtomString();
+
+    // Məhsul şəkilləri (sitemap limiti: bir URL üçün 1000 şəkil)
+    $images = [];
+    foreach ($products as $p) {
+        $sources = array_merge([$p->image], is_array($p->images) ? $p->images : []);
+        foreach ($sources as $src) {
+            $url = $abs($src);
+            if ($url && !isset($images[$url])) {
+                $images[$url] = $p->name;
+                if (count($images) >= 1000) break 2;
+            }
+        }
+    }
+
+    $e = fn ($v) => htmlspecialchars((string) $v, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+
+    $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . "\n";
+    $xml .= '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
+    $xml .= "  <url>\n";
+    $xml .= '    <loc>' . $e(url('/')) . "</loc>\n";
+    $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
+    $xml .= "    <changefreq>daily</changefreq>\n";
+    $xml .= "    <priority>1.0</priority>\n";
+    foreach ($images as $url => $title) {
+        $xml .= "    <image:image>\n";
+        $xml .= '      <image:loc>' . $e($url) . "</image:loc>\n";
+        if ($title !== '') {
+            $xml .= '      <image:title>' . $e($title) . "</image:title>\n";
+        }
+        $xml .= "    </image:image>\n";
+    }
+    $xml .= "  </url>\n";
     $xml .= '</urlset>' . "\n";
 
-    return response($xml, 200, ['Content-Type' => 'application/xml; charset=utf-8']);
-});
+    return response($xml, 200, [
+        'Content-Type'  => 'application/xml; charset=utf-8',
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
+})->name('sitemap');

@@ -1,7 +1,8 @@
 @php
     $siteUrl        = rtrim(url('/'), '/');
     $canonical      = url()->current();
-    $ogImage        = asset('og-image.svg');
+    // OG/Twitter şəkli PNG olmalıdır — Facebook və X (Twitter) SVG-ni render etmir
+    $ogImage        = asset('og-image.png');
     $metaTitle      = __('site.meta.title');
     $metaDesc       = __('site.meta.description');
     $metaKeywords   = __('site.meta.keywords');
@@ -29,9 +30,21 @@
             'addressLocality' => 'Bakı',
             'addressCountry'  => 'AZ',
         ],
+        'areaServed' => [
+            '@type' => 'City',
+            'name'  => 'Bakı',
+        ],
         'sameAs' => [
             'https://www.instagram.com/texnobey.az/',
             'https://www.facebook.com/p/TexnoBeyaz-61568468586277/',
+        ],
+        'contactPoint' => [
+            '@type'             => 'ContactPoint',
+            'contactType'       => 'customer service',
+            'telephone'         => $orgPhone,
+            'email'             => $orgEmail,
+            'areaServed'        => 'AZ',
+            'availableLanguage' => ['az', 'ru', 'en'],
         ],
     ];
 
@@ -45,23 +58,36 @@
         'publisher' => ['@id' => $siteUrl . '/#store'],
     ];
 
+    $priceValidUntil = now()->addYear()->toDateString();
     $productItems = [];
     foreach (($products['list'] ?? []) as $p) {
-        $productItems[] = [
-            '@type'       => 'Product',
-            'name'        => $p['name'] ?? '',
-            'description' => $p['desc'] ?? '',
-            'image'       => !empty($p['image']) ? url($p['image']) : $ogImage,
+        // Qalereyadakı bütün şəkilləri mütləq (absolute) URL kimi veririk
+        $gallery = array_values(array_filter(array_merge(
+            [$p['image'] ?? null],
+            is_array($p['images'] ?? null) ? $p['images'] : []
+        )));
+        $gallery = array_map(fn ($src) => \Illuminate\Support\Str::startsWith($src, ['http://', 'https://']) ? $src : url($src), $gallery);
+
+        $productItems[] = array_filter([
+            '@type'         => 'Product',
+            'name'          => $p['name'] ?? '',
+            'description'   => $p['desc'] ?? '',
+            'sku'           => !empty($p['id']) ? 'TB-' . $p['id'] : null,
+            'category'      => $p['cat'] ?? null,
+            'image'         => $gallery ?: [$ogImage],
+            'itemCondition' => 'https://schema.org/NewCondition',
             'offers'      => [
                 '@type'         => 'Offer',
                 'price'         => preg_replace('/[^0-9.]/', '', (string)($p['price'] ?? '')),
                 'priceCurrency' => 'AZN',
+                'priceValidUntil' => $priceValidUntil,
                 'availability'  => (int)($p['stock'] ?? 0) > 0
                     ? 'https://schema.org/InStock'
                     : 'https://schema.org/OutOfStock',
                 'url'           => $siteUrl . '/#products',
+                'seller'        => ['@id' => $siteUrl . '/#store'],
             ],
-        ];
+        ], fn ($v) => $v !== null && $v !== '');
     }
     $itemList = [
         '@context'         => 'https://schema.org',
@@ -94,6 +120,8 @@
 <meta property="og:title" content="{{ $metaTitle }}">
 <meta property="og:description" content="{{ $metaDesc }}">
 <meta property="og:image" content="{{ $ogImage }}">
+<meta property="og:image:secure_url" content="{{ $ogImage }}">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Texnobəy – Bakıda №1 Texnologiya Mağazası">
@@ -103,6 +131,12 @@
 <meta name="twitter:title" content="{{ $metaTitle }}">
 <meta name="twitter:description" content="{{ $metaDesc }}">
 <meta name="twitter:image" content="{{ $ogImage }}">
+<meta name="twitter:image:alt" content="Texnobəy – Bakıda №1 Texnologiya Mağazası">
+
+<!-- Yerli axtarış (local SEO) -->
+<meta name="geo.region" content="AZ-BA">
+<meta name="geo.placename" content="Bakı">
+<meta name="format-detection" content="telephone=yes">
 
 <!-- Favicons -->
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
