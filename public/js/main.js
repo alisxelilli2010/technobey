@@ -354,41 +354,65 @@ async function handleSubmit() {
   }, 4000);
 }
 
-// ===== FIRST VISIT: AUTO-SCROLL TO PRODUCTS =====
-// Saytı ilk dəfə açan istifadəçini məhsullar bölməsinə yumşaq şəkildə aparır.
-// Sonrakı ziyarətlərdə (localStorage bayrağı) səhifə normal yuxarıdan açılır.
-(function firstVisitProducts() {
-  const FIRST_VISIT_KEY = 'tb_seen_products';
-  if (window.location.hash) return; // deep-link/geri qayıtma varsa qarışmırıq
+// ===== PRODUCTS ANCHOR =====
+// "#products" hədəfi bölmənin başlıq mətni yox, axtarış/filtr sətri + kartlardır.
+// Fixed navbar-ın hündürlüyü çıxılır ki, toolbar menyunun altında qalmasın.
+const PRODUCTS_GAP = 24;
+function productsScrollTop() {
+  const target = document.getElementById('productToolbar') || document.getElementById('products');
+  if (!target) return null;
+  const navH = document.getElementById('navbar')?.offsetHeight || 70;
+  return Math.max(0, target.getBoundingClientRect().top + window.scrollY - navH - PRODUCTS_GAP);
+}
+function scrollToProducts(behavior) {
+  const top = productsScrollTop();
+  if (top === null) return false;
+  window.scrollTo({ top, behavior: behavior || 'smooth' });
+  return true;
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.getElementById('products')) return; // ana səhifə deyil
+
+  // "Məhsullar" linkləri (navbar, mobil menyu, footer) da toolbar-a düşsün
+  document.querySelectorAll('a[href="#products"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToProducts('smooth');
+    });
+  });
+
+  // URL-də #products varsa, brauzerin başlığa tullanmasını düzəldirik
+  if (window.location.hash === '#products') {
+    const fix = () => scrollToProducts('auto');
+    requestAnimationFrame(fix);
+    setTimeout(fix, 250);
+    window.addEventListener('load', () => setTimeout(fix, 100), { once: true });
+    return;
+  }
+
+  // Başqa bir hash varsa (deep-link/geri qayıtma) qarışmırıq
+  if (window.location.hash) return;
+
+  // ===== İLK ZİYARƏT: AVTOMATİK MƏHSULLARA =====
+  const FIRST_VISIT_KEY = 'tb_seen_products';
   let seen = true;
   try { seen = localStorage.getItem(FIRST_VISIT_KEY) === '1'; } catch { return; }
   if (seen) return;
+  try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const section = document.getElementById('products');
-    if (!section) return; // ana səhifə deyil
-    // Başlıq mətnini yox, birbaşa axtarış/filtr sətri + məhsul kartlarını göstəririk
-    const target = document.getElementById('productToolbar') || section;
+  let cancelled = false;
+  const cancel = () => { cancelled = true; };
+  ['wheel', 'touchstart', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, cancel, { once: true, passive: true })
+  );
 
-    try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
-
-    let cancelled = false;
-    const cancel = () => { cancelled = true; };
-    ['wheel', 'touchstart', 'keydown'].forEach(ev =>
-      window.addEventListener(ev, cancel, { once: true, passive: true })
-    );
-
-    // Layout/şəkillər yerini tapsın deyə qısa gözləyirik
-    setTimeout(() => {
-      if (cancelled || window.scrollY > 40) return;
-      const navH = document.getElementById('navbar')?.offsetHeight || 70;
-      const top = target.getBoundingClientRect().top + window.scrollY - navH - 24;
-      window.scrollTo({ top, behavior: 'smooth' });
-      history.replaceState(null, '', '#products');
-    }, 900);
-  });
-})();
+  // Layout/şəkillər yerini tapsın deyə qısa gözləyirik
+  setTimeout(() => {
+    if (cancelled || window.scrollY > 40) return;
+    scrollToProducts('smooth');
+  }, 900);
+});
 
 // Fade-in on scroll
 const observer = new IntersectionObserver((entries) => {
