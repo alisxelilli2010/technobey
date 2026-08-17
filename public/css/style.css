@@ -572,6 +572,10 @@ body.menu-open { overflow: hidden; }
 }
 @media (max-width: 640px) {
   .navbar { padding: 0 4%; }
+  /* Soldakı sabit sosial panel məhsul kartlarının üstünü az tutsun */
+  .floating-cta { gap: 7px; padding: 7px; border-radius: 0 14px 14px 0; }
+  .float-btn { width: 36px; height: 36px; border-radius: 10px; }
+  .float-btn svg { width: 17px; height: 17px; }
   .services-grid { grid-template-columns: 1fr; }
   .products-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
