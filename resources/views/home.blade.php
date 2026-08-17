@@ -331,7 +331,7 @@
           ($catNames[$p['cat'] ?? ''] ?? '')
         );
       @endphp
-      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}" data-search="{{ $searchBlob }}" data-product-id="{{ $p['id'] ?? 0 }}"
+      <div class="product-card" data-cat="{{ $p['cat'] ?? '' }}" data-slug="{{ $p['slug'] ?? '' }}" data-search="{{ $searchBlob }}" data-product-id="{{ $p['id'] ?? 0 }}"
            data-name="{{ $pName }}" data-price="{{ $p['price'] ?? '' }}" data-unit="{{ $p['unit'] ?? 'ədəd' }}">
         <div class="product-img-wrap">
           @if (!empty($gallery))
@@ -365,7 +365,15 @@
               <div class="product-views" title="{{ __('site.views.title') }}">👁️ {{ number_format($p['views'], 0, '.', ' ') }}</div>
             @endif
           </div>
-          <h3>{{ $pName }}</h3>
+          {{-- Başlıq məhsul səhifəsinə keçid — axtarış motorları məhsulları bu linklə tapır.
+               "Ətraflı" düyməsi isə əvvəlki kimi sürətli önizləmə modalını açır. --}}
+          <h3>
+            @if (!empty($p['slug']))
+              <a href="{{ route('product.show', $p['slug']) }}" class="product-title-link">{{ $pName }}</a>
+            @else
+              {{ $pName }}
+            @endif
+          </h3>
           <p>{{ $pDesc }}</p>
           <div class="product-footer">
             <div class="price">{{ $p['price'] ?? '' }} ₼ <span>/ {{ $unitMap[$p['unit'] ?? 'ədəd'] ?? ($p['unit'] ?? '') }}</span></div>

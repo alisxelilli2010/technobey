@@ -344,6 +344,20 @@ function selectProduct(linkEl, name, cat, price, unit) {
   setTimeout(() => { const n = form.querySelector('input[name="name"]'); if (n) n.focus(); }, 500);
 }
 
+// Məhsul səhifəsindən gəliş: /?product=<slug>#order — formanı həmin məhsulla doldurur
+document.addEventListener('DOMContentLoaded', () => {
+  const slug = new URLSearchParams(window.location.search).get('product');
+  if (!slug || !document.getElementById('orderForm')) return;
+
+  const card = document.querySelector(`.product-card[data-slug="${CSS.escape(slug)}"]`);
+  if (!card) return;
+
+  selectProduct(card, card.dataset.name || '', card.dataset.cat || '',
+                card.dataset.price || '', card.dataset.unit || 'ədəd');
+  // Sorğu parametri URL-də qalmasın (paylaşılan link təmiz olsun)
+  history.replaceState(null, '', window.location.pathname + '#order');
+});
+
 // Form submit – sifarişi serverə göndər
 async function handleSubmit() {
   const form = document.getElementById('orderForm');

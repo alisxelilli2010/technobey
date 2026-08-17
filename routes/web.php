@@ -541,6 +541,39 @@ Route::post('/api/admin/testimonials', function (Request $request) {
     return response()->json(['ok' => true]);
 })->middleware('auth');
 
+// ===== PRODUCT PAGE (public) =====
+Route::get('/mehsul/{product}', function (Request $request, Product $product) use ($sections) {
+    try {
+        Visit::create([
+            'ip'         => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+            'path'       => '/mehsul/' . $product->slug,
+        ]);
+    } catch (\Throwable) {
+        // silent
+    }
+
+    $category = Category::where('slug', $product->cat)->first();
+
+    // Eyni kateqoriyadan digər məhsullar (daxili keçidlər üçün)
+    $related = Product::where('id', '!=', $product->id)
+        ->when($product->cat, fn ($q) => $q->where('cat', $product->cat))
+        ->orderByDesc('views')->limit(4)->get();
+    if ($related->count() < 4) {
+        $related = $related->concat(
+            Product::whereNotIn('id', $related->pluck('id')->push($product->id))
+                ->orderByDesc('views')->limit(4 - $related->count())->get()
+        );
+    }
+
+    return view('product', [
+        'product'  => $product,
+        'category' => $category,
+        'related'  => $related,
+        'contact'  => SiteContent::get('contact'),
+    ]);
+})->name('product.show');
+
 // ===== ORDER TRACKING (public) =====
 Route::get('/order-status', function (Request $request) {
     $code = trim((string) $request->query('code', ''));
@@ -569,7 +602,7 @@ Route::get('/sitemap.xml', function () {
         return \Illuminate\Support\Str::startsWith($src, ['http://', 'https://']) ? $src : url($src);
     };
 
-    $products = Product::orderByDesc('updated_at')->get(['id', 'name', 'image', 'images', 'updated_at']);
+    $products = Product::orderByDesc('updated_at')->get(['id', 'name', 'slug', 'image', 'images', 'updated_at']);
 
     // Ən son dəyişiklik: məhsullar + storage-dakı bölmə məzmunu
     $lastmod = $products->max('updated_at');
@@ -611,6 +644,26 @@ Route::get('/sitemap.xml', function () {
         $xml .= "    </image:image>\n";
     }
     $xml .= "  </url>\n";
+
+    // Hər məhsulun öz səhifəsi — yeni məhsul yaradılan kimi avtomatik düşür
+    foreach ($products as $p) {
+        if (empty($p->slug)) continue;
+        $xml .= "  <url>\n";
+        $xml .= '    <loc>' . $e(route('product.show', $p->slug)) . "</loc>\n";
+        $xml .= '    <lastmod>' . ($p->updated_at ?: now())->toAtomString() . "</lastmod>\n";
+        $xml .= "    <changefreq>weekly</changefreq>\n";
+        $xml .= "    <priority>0.8</priority>\n";
+        foreach (array_merge([$p->image], is_array($p->images) ? $p->images : []) as $src) {
+            $url = $abs($src);
+            if (!$url) continue;
+            $xml .= "    <image:image>\n";
+            $xml .= '      <image:loc>' . $e($url) . "</image:loc>\n";
+            $xml .= '      <image:title>' . $e($p->name) . "</image:title>\n";
+            $xml .= "    </image:image>\n";
+        }
+        $xml .= "  </url>\n";
+    }
+
     $xml .= '</urlset>' . "\n";
 
     return response($xml, 200, [

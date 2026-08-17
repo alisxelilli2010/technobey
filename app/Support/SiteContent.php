@@ -118,6 +118,7 @@ class SiteContent
         $meta['list'] = Product::orderBy('id')->get()->map(fn ($p) => [
             'id'     => $p->id,
             'name'   => $p->name,
+            'slug'   => $p->slug,
             'cat'    => $p->cat,
             'price'  => $p->price,
             'unit'   => $p->unit,
