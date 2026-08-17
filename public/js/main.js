@@ -431,12 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Başqa bir hash varsa (deep-link/geri qayıtma) qarışmırıq
   if (window.location.hash) return;
 
-  // ===== İLK ZİYARƏT: AVTOMATİK MƏHSULLARA =====
-  const FIRST_VISIT_KEY = 'tb_seen_products';
-  let seen = true;
-  try { seen = localStorage.getItem(FIRST_VISIT_KEY) === '1'; } catch { return; }
-  if (seen) return;
-  try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
+  // ===== SAYTA GİRİŞ: AVTOMATİK MƏHSULLARA =====
+  // Hash-siz hər açılışda işləyir. Əvvəl localStorage bayrağı ilə yalnız ilk
+  // ziyarətdə işləyirdi — ona görə adi rejimdə bir dəfədən sonra baş vermirdi,
+  // inkoqnitoda isə yaddaş boş olduğu üçün hər dəfə işləyirdi.
+  try { localStorage.removeItem('tb_seen_products'); } catch {}
 
   // Brauzerin köhnə scroll mövqeyini bərpa etməsi avtomatik sürüşməni pozmasın
   if ('scrollRestoration' in history) {
