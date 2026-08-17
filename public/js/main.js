@@ -366,8 +366,10 @@ async function handleSubmit() {
   if (seen) return;
 
   document.addEventListener('DOMContentLoaded', () => {
-    const target = document.getElementById('products');
-    if (!target) return; // ana səhifə deyil
+    const section = document.getElementById('products');
+    if (!section) return; // ana səhifə deyil
+    // Başlıq mətnini yox, birbaşa axtarış/filtr sətri + məhsul kartlarını göstəririk
+    const target = document.getElementById('productToolbar') || section;
 
     try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
 
@@ -381,7 +383,7 @@ async function handleSubmit() {
     setTimeout(() => {
       if (cancelled || window.scrollY > 40) return;
       const navH = document.getElementById('navbar')?.offsetHeight || 70;
-      const top = target.getBoundingClientRect().top + window.scrollY - navH;
+      const top = target.getBoundingClientRect().top + window.scrollY - navH - 24;
       window.scrollTo({ top, behavior: 'smooth' });
       history.replaceState(null, '', '#products');
     }, 900);

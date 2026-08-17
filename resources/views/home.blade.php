@@ -259,7 +259,7 @@
       <h2 class="section-title">{!! $products['title'] ?? '' !!}</h2>
       <p class="section-sub">{{ $products['sub'] ?? '' }}</p>
     </div>
-    <div class="product-toolbar">
+    <div class="product-toolbar" id="productToolbar">
       <input type="text" class="search-input" id="productSearch" placeholder="{{ __('site.filter.search') }}" oninput="filterProducts()">
       <div class="filter-bar" id="filterBar">
         <button class="filter-btn active" data-cat="all" onclick="setCatFilter('all', this)">{{ __('site.filter.all') }}</button>
