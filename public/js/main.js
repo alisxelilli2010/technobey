@@ -354,6 +354,40 @@ async function handleSubmit() {
   }, 4000);
 }
 
+// ===== FIRST VISIT: AUTO-SCROLL TO PRODUCTS =====
+// Saytı ilk dəfə açan istifadəçini məhsullar bölməsinə yumşaq şəkildə aparır.
+// Sonrakı ziyarətlərdə (localStorage bayrağı) səhifə normal yuxarıdan açılır.
+(function firstVisitProducts() {
+  const FIRST_VISIT_KEY = 'tb_seen_products';
+  if (window.location.hash) return; // deep-link/geri qayıtma varsa qarışmırıq
+
+  let seen = true;
+  try { seen = localStorage.getItem(FIRST_VISIT_KEY) === '1'; } catch { return; }
+  if (seen) return;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const target = document.getElementById('products');
+    if (!target) return; // ana səhifə deyil
+
+    try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
+
+    let cancelled = false;
+    const cancel = () => { cancelled = true; };
+    ['wheel', 'touchstart', 'keydown'].forEach(ev =>
+      window.addEventListener(ev, cancel, { once: true, passive: true })
+    );
+
+    // Layout/şəkillər yerini tapsın deyə qısa gözləyirik
+    setTimeout(() => {
+      if (cancelled || window.scrollY > 40) return;
+      const navH = document.getElementById('navbar')?.offsetHeight || 70;
+      const top = target.getBoundingClientRect().top + window.scrollY - navH;
+      window.scrollTo({ top, behavior: 'smooth' });
+      history.replaceState(null, '', '#products');
+    }, 900);
+  });
+})();
+
 // Fade-in on scroll
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
