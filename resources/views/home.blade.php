@@ -510,22 +510,33 @@
 
         <a href="{{ $about['btnLink'] ?? '#' }}" class="btn-primary" style="display:inline-flex">{{ $about['btnText'] ?? '' }}</a>
       </div>
-      <div class="about-img-wrap">
-        <div class="about-icon">{{ $about['icon'] ?? '🏪' }}</div>
-        <h3>{{ $about['centerName'] ?? '' }}</h3>
-        <p>{{ $about['centerAddr'] ?? '' }}</p>
-        <br>
-        @php
-          preg_match('/([0-9.]+)/u', $about['met1Num'] ?? '', $am1);
-          preg_match('/([0-9.]+)/u', $about['met2Num'] ?? '', $am2);
-          $am1d = $am1[1] ?? ''; $am2d = $am2[1] ?? '';
-          $am1s = trim(str_replace($am1d, '', $about['met1Num'] ?? ''));
-          $am2s = trim(str_replace($am2d, '', $about['met2Num'] ?? ''));
-        @endphp
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%">
-          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am1d }}">0</span>{{ $am1s }}</div><small>{{ $about['met1Lbl'] ?? '' }}</small></div>
-          <div class="metric-card"><div class="big"><span data-counter data-target="{{ $am2d }}">0</span>{{ $am2s }}</div><small>{{ $about['met2Lbl'] ?? '' }}</small></div>
+      @php
+        preg_match('/([0-9.]+)/u', $about['met1Num'] ?? '', $am1);
+        preg_match('/([0-9.]+)/u', $about['met2Num'] ?? '', $am2);
+        $am1d = $am1[1] ?? ''; $am2d = $am2[1] ?? '';
+        $am1s = trim(str_replace($am1d, '', $about['met1Num'] ?? ''));
+        $am2s = trim(str_replace($am2d, '', $about['met2Num'] ?? ''));
+      @endphp
+      {{-- Servis mərkəzi lövhəsi: rəqəmlər avadanlıq üzərindəki texniki plaka kimi
+           sətir-sətir verilir, marka rəngi yalnız nişan və üst xəttdə işlədilir. --}}
+      <div class="about-panel">
+        <div class="about-panel-head">
+          <div class="about-mark" aria-hidden="true">{{ $about['icon'] ?? '🏪' }}</div>
+          <div class="about-panel-id">
+            <h3>{{ $about['centerName'] ?? '' }}</h3>
+            <p>{{ $about['centerAddr'] ?? '' }}</p>
+          </div>
         </div>
+        <dl class="about-specs">
+          <div class="about-spec">
+            <dt>{{ $about['met1Lbl'] ?? '' }}</dt>
+            <dd><span data-counter data-target="{{ $am1d }}">0</span>{{ $am1s }}</dd>
+          </div>
+          <div class="about-spec">
+            <dt>{{ $about['met2Lbl'] ?? '' }}</dt>
+            <dd><span data-counter data-target="{{ $am2d }}">0</span>{{ $am2s }}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </div>

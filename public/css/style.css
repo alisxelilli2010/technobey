@@ -445,15 +445,52 @@ textarea { resize: vertical; min-height: 110px; }
 }
 .about-text h2 { font-size: clamp(1.8rem, 2.8vw, 2.4rem); font-weight: 800; color: var(--white); letter-spacing: -1px; margin-bottom: 16px; }
 .about-text p { color: var(--muted); line-height: 1.8; margin-bottom: 14px; font-size: 0.95rem; }
-.about-img-wrap {
-  background: linear-gradient(135deg, var(--card), #1a2540);
-  border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 360px; text-align: center; gap: 16px;
+/* Servis mərkəzi lövhəsi */
+.about-panel {
+  position: relative; overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 34px;
+  display: flex; flex-direction: column; gap: 28px;
 }
-.about-icon { font-size: 5rem; }
-.about-img-wrap h3 { font-size: 1.2rem; font-weight: 700; color: var(--white); }
-.about-img-wrap p { color: var(--muted); font-size: 0.88rem; }
+/* Emalatxana millimetrik kağızı — çox sönük, yalnız sağ yuxarı küncdə */
+.about-panel::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg,  rgba(0,87,255,0.07) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, rgba(0,87,255,0.07) 0 1px, transparent 1px 28px);
+  -webkit-mask-image: radial-gradient(120% 95% at 100% 0%, #000 0%, transparent 70%);
+          mask-image: radial-gradient(120% 95% at 100% 0%, #000 0%, transparent 70%);
+}
+.about-panel::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+.about-panel-head { position: relative; display: flex; align-items: center; gap: 16px; }
+.about-mark {
+  width: 62px; height: 62px; flex: none; border-radius: 18px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  display: grid; place-items: center; font-size: 1.9rem; line-height: 1;
+  box-shadow: 0 10px 26px rgba(0, 87, 255, 0.28);
+}
+.about-panel-id h3 { font-size: 1.12rem; font-weight: 800; color: var(--white); letter-spacing: -0.3px; }
+.about-panel-id p { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+
+.about-specs { position: relative; display: flex; flex-direction: column; }
+.about-spec {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 18px;
+  padding: 20px 0; border-top: 1px solid var(--border);
+}
+.about-spec:last-child { border-bottom: 1px solid var(--border); }
+.about-spec dt {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.about-spec dd {
+  font-size: 2.6rem; font-weight: 800; line-height: 1; letter-spacing: -2px;
+  color: var(--white); font-variant-numeric: tabular-nums;
+}
 .timeline { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
 .tl-item { display: flex; gap: 14px; align-items: flex-start; }
 .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); margin-top: 6px; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(0,87,255,0.25); }
@@ -572,6 +609,8 @@ body.menu-open { overflow: hidden; }
 }
 @media (max-width: 640px) {
   .navbar { padding: 0 4%; }
+  .about-panel { padding: 26px 24px; }
+  .about-spec dd { font-size: 2rem; letter-spacing: -1.4px; }
   /* Soldakı sabit sosial panel məhsul kartlarının üstünü az tutsun */
   .floating-cta { gap: 7px; padding: 7px; border-radius: 0 14px 14px 0; }
   .float-btn { width: 36px; height: 36px; border-radius: 10px; }
