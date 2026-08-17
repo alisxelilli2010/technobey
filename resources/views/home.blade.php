@@ -192,8 +192,8 @@
   <a href="#about" onclick="closeMobile()">{{ __('site.nav.about') }}</a>
   <a href="#contact" onclick="closeMobile()">{{ __('site.nav.contact') }}</a>
   <a href="{{ route('order.status') }}" onclick="closeMobile()">{{ __('site.nav.track') }}</a>
+  {{-- Tema düyməsi yalnız navbar-da qalır — burada təkrarlanmır --}}
   <a href="#order" onclick="closeMobile()" class="btn-primary">{{ __('site.nav.order') }}</a>
-  <button type="button" class="theme-btn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" aria-label="{{ __('site.nav.theme') }}" style="margin-top:8px"><span id="themeBtnIcoMobile">🌙</span></button>
 </div>
 
 <!-- HERO -->
