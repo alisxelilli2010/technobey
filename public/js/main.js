@@ -401,17 +401,33 @@ document.addEventListener('DOMContentLoaded', () => {
   if (seen) return;
   try { localStorage.setItem(FIRST_VISIT_KEY, '1'); } catch {}
 
+  // Brauzerin köhnə scroll mövqeyini bərpa etməsi avtomatik sürüşməni pozmasın
+  if ('scrollRestoration' in history) {
+    try { history.scrollRestoration = 'manual'; } catch {}
+  }
+  window.scrollTo({ top: 0, behavior: 'auto' });
+
+  // Yalnız istifadəçinin özü hərəkət edərsə ləğv edirik
   let cancelled = false;
   const cancel = () => { cancelled = true; };
-  ['wheel', 'touchstart', 'keydown'].forEach(ev =>
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev =>
     window.addEventListener(ev, cancel, { once: true, passive: true })
   );
 
-  // Layout/şəkillər yerini tapsın deyə qısa gözləyirik
-  setTimeout(() => {
-    if (cancelled || window.scrollY > 40) return;
+  // Şəkillər yüklənib layout oturandan sonra sürüşürük, sonra mövqeyi dəqiqləşdiririk
+  const go = () => {
+    if (cancelled) return;
     scrollToProducts('smooth');
-  }, 900);
+    // Gec yüklənən şəkillər hədəfi sürüşdürübsə, düzəlişi bir dəfə təkrar edirik
+    setTimeout(() => {
+      if (cancelled) return;
+      const want = productsScrollTop();
+      if (want !== null && Math.abs(window.scrollY - want) > 8) scrollToProducts('auto');
+    }, 1200);
+  };
+  const start = () => setTimeout(go, 600);
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start, { once: true });
 });
 
 // Fade-in on scroll
