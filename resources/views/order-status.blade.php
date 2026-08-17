@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
-<script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){try{if(!localStorage.getItem('tb_theme_v2')){localStorage.removeItem('tb_theme');localStorage.setItem('tb_theme_v2','1');}var t=localStorage.getItem('tb_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
 <body>
 

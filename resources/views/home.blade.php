@@ -110,7 +110,7 @@
 <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
 <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
-<script>(function(){try{var t=localStorage.getItem('tb_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){try{if(!localStorage.getItem('tb_theme_v2')){localStorage.removeItem('tb_theme');localStorage.setItem('tb_theme_v2','1');}var t=localStorage.getItem('tb_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ filemtime(public_path('css/style.css')) }}">
@@ -130,23 +130,25 @@
     <div class="logo-icon"><img src="{{ asset('logo.svg') }}" alt="Texnobəy" loading="lazy"></div>
     Texno<span>bəy</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="#services">{{ __('site.nav.services') }}</a></li>
-    <li><a href="#products">{{ __('site.nav.products') }}</a></li>
-    <li><a href="#about">{{ __('site.nav.about') }}</a></li>
-    <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
-    <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
-    <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
-    <li><button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" aria-label="{{ __('site.nav.theme') }}"><span id="themeBtnIco">🌙</span></button></li>
-  </ul>
-  <button class="hamburger" id="hamburger" aria-label="{{ __('site.nav.menu') }}">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#services">{{ __('site.nav.services') }}</a></li>
+      <li><a href="#products">{{ __('site.nav.products') }}</a></li>
+      <li><a href="#about">{{ __('site.nav.about') }}</a></li>
+      <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
+      <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
+      <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
+    </ul>
+    <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="{{ __('site.nav.theme') }}" aria-label="{{ __('site.nav.theme') }}"><span id="themeBtnIco">🌙</span></button>
+    <button type="button" class="hamburger" id="hamburger" aria-label="{{ __('site.nav.menu') }}" aria-controls="mobileMenu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">✕</button>
+  <button type="button" class="mobile-close" id="mobileClose" aria-label="{{ __('site.nav.menu') }}">✕</button>
   <a href="#services" onclick="closeMobile()">{{ __('site.nav.services') }}</a>
   <a href="#products" onclick="closeMobile()">{{ __('site.nav.products') }}</a>
   <a href="#about" onclick="closeMobile()">{{ __('site.nav.about') }}</a>

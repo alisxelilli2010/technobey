@@ -1,21 +1,22 @@
-// Theme (dark/light) — persistent via localStorage, shared with admin panel
+// Theme (light default; dark opsional) — yalnız istifadəçi özü dəyişəndə yadda saxlanılır
 const THEME_KEY = 'tb_theme';
-function applyTheme(theme) {
+const THEME_DEFAULT = 'light';
+function applyTheme(theme, persist) {
   document.documentElement.setAttribute('data-theme', theme);
   const label = theme === 'light' ? '☀️' : '🌙';
   ['themeBtnIco', 'themeBtnIcoMobile'].forEach(id => {
     const el = document.getElementById(id); if (el) el.textContent = label;
   });
-  try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  if (persist) { try { localStorage.setItem(THEME_KEY, theme); } catch {} }
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-  applyTheme(cur === 'light' ? 'dark' : 'light');
+  applyTheme(cur === 'light' ? 'dark' : 'light', true);
 }
 (function initTheme() {
-  let saved = 'dark';
-  try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch {}
-  applyTheme(saved);
+  let saved = THEME_DEFAULT;
+  try { saved = localStorage.getItem(THEME_KEY) || THEME_DEFAULT; } catch {}
+  applyTheme(saved, false);
 })();
 
 // Navbar scroll effect
@@ -134,9 +135,31 @@ document.addEventListener('DOMContentLoaded', () => {
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
 const mobileClose = document.getElementById('mobileClose');
-hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
-mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
-function closeMobile() { mobileMenu.classList.remove('open'); }
+
+function setMobileMenu(open) {
+  if (!mobileMenu) return;
+  mobileMenu.classList.toggle('open', open);
+  document.body.classList.toggle('menu-open', open);
+  if (hamburger) {
+    hamburger.classList.toggle('active', open);
+    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+}
+function openMobile() { setMobileMenu(true); }
+function closeMobile() { setMobileMenu(false); }
+function toggleMobile() { setMobileMenu(!mobileMenu?.classList.contains('open')); }
+
+if (hamburger) {
+  hamburger.addEventListener('click', (e) => { e.preventDefault(); toggleMobile(); });
+}
+if (mobileClose) {
+  mobileClose.addEventListener('click', (e) => { e.preventDefault(); closeMobile(); });
+}
+if (mobileMenu) {
+  // Menyunun boş sahəsinə toxunanda da bağlansın
+  mobileMenu.addEventListener('click', (e) => { if (e.target === mobileMenu) closeMobile(); });
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobile(); });
 
 // Product filter (search + category — hər ikisi eyni funksiya)
 let _activeCat = 'all';

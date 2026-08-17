@@ -43,7 +43,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ===== NAVBAR ===== */
 .navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1300;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 5%; height: 70px;
   background: var(--nav-bg);
@@ -53,12 +53,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .navbar.scrolled { background: var(--nav-bg-scr); }
 .theme-btn {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 38px; height: 38px; border-radius: 50%;
   background: transparent; border: 1px solid var(--border);
   color: var(--text); font-size: 1.05rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
   transition: border-color var(--transition), background var(--transition), transform var(--transition);
-  margin-left: 12px;
 }
 .theme-btn:hover { border-color: var(--blue); background: var(--glow); transform: rotate(20deg); }
 .logo {
@@ -70,8 +70,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 36px; height: 36px; display: grid; place-items: center;
 }
 .logo-icon img, .logo-icon svg { width: 100%; height: 100%; display: block; }
-.logo span { color: #FFFFFF; }
-.nav-links { display: flex; align-items: center; gap: 2rem; }
+.logo span { color: var(--white); }
+.nav-right { display: flex; align-items: center; gap: 0.9rem; margin-left: auto; }
+.nav-links { display: flex; align-items: center; gap: 1.15rem; }
 .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: color var(--transition); }
 .nav-links a:hover { color: var(--white); }
 .nav-links a.nav-cta,
@@ -82,8 +83,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .nav-links a.nav-cta:hover,
 .nav-cta:hover { color: #FFFFFF !important; opacity: 0.9; transform: translateY(-1px); }
-.hamburger { display: none; flex-direction: column; gap: 5px; padding: 4px; }
-.hamburger span { width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: var(--transition); }
+.hamburger {
+  display: none; flex-direction: column; justify-content: center; align-items: center;
+  gap: 5px; width: 40px; height: 40px; flex: none;
+  border-radius: 10px; border: 1px solid var(--border); background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.hamburger span { width: 20px; height: 2px; background: var(--text); border-radius: 2px; transition: transform var(--transition), opacity var(--transition); }
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* ===== HERO ===== */
 .hero {
@@ -301,7 +310,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* Product detail modal */
 .pd-modal {
-  position: fixed; inset: 0; z-index: 1000; display: none;
+  position: fixed; inset: 0; z-index: 1400; display: none;
   align-items: center; justify-content: center; padding: 20px;
   background: rgba(3, 8, 20, 0.72); backdrop-filter: blur(4px);
 }
@@ -523,14 +532,22 @@ footer {
 
 /* ===== MOBILE NAV ===== */
 .mobile-menu {
-  display: none; position: fixed; inset: 0; z-index: 999;
-  background: rgba(8,13,26,0.97); flex-direction: column; align-items: center; justify-content: center; gap: 2.4rem;
+  display: none; position: fixed; inset: 0; z-index: 1200;
+  background: var(--night);
+  flex-direction: column; align-items: center; justify-content: center; gap: 2.2rem;
+  padding: 90px 24px 40px; overflow-y: auto;
 }
 .mobile-menu.open { display: flex; }
 .mobile-menu a { font-size: 1.4rem; font-weight: 700; color: var(--white); }
-.mobile-close { position: absolute; top: 24px; right: 24px; font-size: 1.8rem; color: var(--muted); }
+/* Bağlamaq üçün navbar-dakı hamburger (X-ə çevrilir) istifadə olunur */
+.mobile-close { display: none; }
+body.menu-open { overflow: hidden; }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+}
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; }
   .hero-visual { display: none; }
@@ -543,8 +560,7 @@ footer {
   .why-visual { display: none; }
 }
 @media (max-width: 640px) {
-  .nav-links { display: none; }
-  .hamburger { display: flex; }
+  .navbar { padding: 0 4%; }
   .services-grid { grid-template-columns: 1fr; }
   .products-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
