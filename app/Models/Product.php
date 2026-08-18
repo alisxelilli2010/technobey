@@ -23,10 +23,11 @@ class Product extends Model
 
     protected static function booted(): void
     {
-        // Məhsul yaradılanda/adı dəyişəndə slug avtomatik qurulur —
-        // beləcə yeni məhsul dərhal öz səhifəsini və sitemap sətrini alır.
+        // Məhsul yaradılanda slug avtomatik qurulur — beləcə yeni məhsul
+        // dərhal öz səhifəsini və sitemap sətrini alır. Ad sonradan dəyişəndə
+        // slug saxlanılır: indeksdəki URL sınmasın.
         static::saving(function (Product $p) {
-            if (empty($p->slug) || $p->isDirty('name')) {
+            if (empty($p->slug)) {
                 $p->slug = self::makeSlug($p->name, $p->id);
             }
         });

@@ -174,6 +174,7 @@
       <li><a href="#services">{{ __('site.nav.services') }}</a></li>
       <li><a href="#products">{{ __('site.nav.products') }}</a></li>
       <li><a href="#about">{{ __('site.nav.about') }}</a></li>
+      <li><a href="{{ route('blog.index') }}">Bloq</a></li>
       <li><a href="#contact">{{ __('site.nav.contact') }}</a></li>
       <li><a href="{{ route('order.status') }}">{{ __('site.nav.track') }}</a></li>
       <li><a href="#order" class="nav-cta">{{ __('site.nav.order') }}</a></li>
@@ -191,6 +192,7 @@
   <a href="#services" onclick="closeMobile()">{{ __('site.nav.services') }}</a>
   <a href="#products" onclick="closeMobile()">{{ __('site.nav.products') }}</a>
   <a href="#about" onclick="closeMobile()">{{ __('site.nav.about') }}</a>
+  <a href="{{ route('blog.index') }}" onclick="closeMobile()">Bloq</a>
   <a href="#contact" onclick="closeMobile()">{{ __('site.nav.contact') }}</a>
   <a href="{{ route('order.status') }}" onclick="closeMobile()">{{ __('site.nav.track') }}</a>
   {{-- Tema düyməsi yalnız navbar-da qalır — burada təkrarlanmır --}}
@@ -683,6 +685,7 @@
         <h4>{{ __('site.footer.company') }}</h4>
         <ul>
           <li><a href="#about">{{ __('site.footer.about_link') }}</a></li>
+          <li><a href="{{ route('blog.index') }}">Bloq</a></li>
           <li><a href="#contact">{{ __('site.footer.contact_link') }}</a></li>
           <li><a href="#order">{{ __('site.footer.order_link') }}</a></li>
           <li><a href="https://wa.me/994557895745" target="_blank">WhatsApp</a></li>

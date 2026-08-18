@@ -4,6 +4,7 @@ use App\Mail\AdminOrderNotification;
 use App\Mail\CustomerOrderConfirmation;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Post;
 use App\Models\Product;
 use App\Models\Testimonial;
 use App\Models\User;
@@ -541,6 +542,44 @@ Route::post('/api/admin/testimonials', function (Request $request) {
     return response()->json(['ok' => true]);
 })->middleware('auth');
 
+// ===== BLOG (public) =====
+Route::get('/bloq', function (Request $request) {
+    $cat = $request->query('kateqoriya');
+    $posts = Post::live()
+        ->when(in_array($cat, array_keys(Post::CATS), true), fn ($q) => $q->where('cat', $cat))
+        ->orderBy('sort_order')->orderByDesc('published_at')
+        ->get();
+
+    return view('blog', ['posts' => $posts, 'activeCat' => $cat]);
+})->name('blog.index');
+
+Route::get('/bloq/{post}', function (Request $request, Post $post) {
+    abort_unless($post->published, 404);
+
+    try {
+        Visit::create([
+            'ip'         => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+            'path'       => '/bloq/' . $post->slug,
+        ]);
+    } catch (\Throwable) {
+        // silent
+    }
+
+    // Eyni ziyarətçi bir yazını sayğaca yalnız bir dəfə əlavə edir
+    $seen = $request->session()->get('viewed_posts', []);
+    if (!in_array($post->id, $seen, true)) {
+        $request->session()->put('viewed_posts', array_slice(array_merge($seen, [$post->id]), -200));
+        $post->increment('views');
+    }
+
+    $related = Post::live()->where('id', '!=', $post->id)
+        ->orderByRaw('cat = ? DESC', [$post->cat])
+        ->orderByDesc('views')->limit(3)->get();
+
+    return view('post', ['post' => $post, 'related' => $related]);
+})->name('blog.show');
+
 // ===== PRODUCT PAGE (public) =====
 Route::get('/mehsul/{product}', function (Request $request, Product $product) use ($sections) {
     try {
@@ -662,6 +701,32 @@ Route::get('/sitemap.xml', function () {
             $xml .= "    </image:image>\n";
         }
         $xml .= "  </url>\n";
+    }
+
+    // Bloq — siyahı və hər yazı
+    $posts = Post::live()->orderByDesc('updated_at')->get(['slug', 'title', 'image', 'updated_at']);
+    if ($posts->isNotEmpty()) {
+        $xml .= "  <url>\n";
+        $xml .= '    <loc>' . $e(route('blog.index')) . "</loc>\n";
+        $xml .= '    <lastmod>' . $posts->max('updated_at')->toAtomString() . "</lastmod>\n";
+        $xml .= "    <changefreq>weekly</changefreq>\n";
+        $xml .= "    <priority>0.7</priority>\n";
+        $xml .= "  </url>\n";
+
+        foreach ($posts as $p) {
+            $xml .= "  <url>\n";
+            $xml .= '    <loc>' . $e(route('blog.show', $p->slug)) . "</loc>\n";
+            $xml .= '    <lastmod>' . ($p->updated_at ?: now())->toAtomString() . "</lastmod>\n";
+            $xml .= "    <changefreq>monthly</changefreq>\n";
+            $xml .= "    <priority>0.6</priority>\n";
+            if ($url = $abs($p->image)) {
+                $xml .= "    <image:image>\n";
+                $xml .= '      <image:loc>' . $e($url) . "</image:loc>\n";
+                $xml .= '      <image:title>' . $e($p->title) . "</image:title>\n";
+                $xml .= "    </image:image>\n";
+            }
+            $xml .= "  </url>\n";
+        }
     }
 
     $xml .= '</urlset>' . "\n";
