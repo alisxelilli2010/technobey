@@ -110,6 +110,7 @@
 <meta name="author" content="Texnobəy">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0057ff">
+<meta name="google-site-verification" content="-cIqDEHgb4PFopZd8bd_63Hoi4IqUnlkTBSJPMGA5vo">
 <link rel="canonical" href="{{ $canonical }}">
 
 <!-- Open Graph -->
