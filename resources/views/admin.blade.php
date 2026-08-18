@@ -587,6 +587,9 @@
       <a class="nav-item {{ $activePage === 'testimonials' ? 'active' : '' }}" data-page="testimonials" href="{{ url('/admin/testimonials') }}">
         <span class="nav-ico">⭐</span> Müştəri Rəyləri
       </a>
+      <a class="nav-item {{ $activePage === 'posts' ? 'active' : '' }}" data-page="posts" href="{{ url('/admin/posts') }}">
+        <span class="nav-ico">📝</span> Bloq
+      </a>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Çıxış</button>
@@ -1127,6 +1130,22 @@
       </div>
     </div>
 
+    <div class="page{{ $activePage === 'posts' ? ' active' : '' }}" id="pagePosts">
+      <div class="page-header">
+        <div>
+          <h2>📝 Bloq</h2>
+          <p>Saytın /bloq bölməsindəki yazıları idarə et</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="ghost-btn" onclick="addPost()">➕ Yeni yazı</button>
+          <button class="add-btn" onclick="savePosts()">💾 Yadda saxla</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div id="postsContainer"></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1358,6 +1377,7 @@
       else if (name === 'profile') await loadProfile();
       else if (name === 'categories') await loadCategories();
       else if (name === 'testimonials') await loadTestimonials();
+      else if (name === 'posts') await loadPosts();
     } catch (e) {
       showToast('❌ Server xətası: ' + e.message, true);
     }
@@ -1979,6 +1999,170 @@
       if (!res.ok) throw new Error('Yadda saxlanmadı');
       await loadTestimonials();
       showToast('✅ Rəylər yeniləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    }
+  }
+
+  // ===== BLOG =====
+  let _posts = [];
+  const POST_CATS = { temir: 'Təmir və servis', satis: 'Seçim və alış' };
+
+  async function loadPosts() {
+    const res = await fetch('/api/admin/posts', { headers: { 'Accept': 'application/json' } });
+    if (res.status === 401 || res.status === 419) { location.reload(); return; }
+    _posts = res.ok ? await res.json() : [];
+    renderPosts();
+  }
+  // FAQ admin panelində sətir-sətir "Sual :: Cavab" formatında redaktə olunur
+  function faqToText(faq) {
+    return (faq || []).map(f => `${f.q} :: ${f.a}`).join('\n');
+  }
+  function textToFaq(text) {
+    return String(text || '').split('\n')
+      .map(line => line.split('::'))
+      .filter(parts => parts.length >= 2)
+      .map(parts => ({ q: parts[0].trim(), a: parts.slice(1).join('::').trim() }))
+      .filter(f => f.q && f.a);
+  }
+  function renderPosts() {
+    document.getElementById('postsContainer').innerHTML = _posts.map((p, i) => `
+      <div class="item-row" data-post-idx="${i}">
+        <div class="item-row-header">
+          <span class="item-row-title">
+            ${escapeHtml(p.icon || '📝')} ${escapeHtml(p.title || 'Yeni yazı')}
+            ${p.published ? '' : '<small style="color:var(--muted);margin-left:8px">(qaralama)</small>'}
+            ${p.slug ? `<small style="color:var(--muted);margin-left:8px">/bloq/${escapeHtml(p.slug)}</small>` : ''}
+          </span>
+          <button class="item-row-del" onclick="removePost(${i})">🗑️ Sil</button>
+        </div>
+        <div class="form-row">
+          <div class="form-grp full"><label>Başlıq</label><input type="text" data-fld="title" value="${escapeAttr(p.title || '')}"></div>
+          <div class="form-grp">
+            <label>Kateqoriya</label>
+            <select data-fld="cat">
+              ${Object.entries(POST_CATS).map(([k, v]) => `<option value="${k}" ${p.cat === k ? 'selected' : ''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-grp"><label>İkon (emoji)</label><input type="text" data-fld="icon" maxlength="4" value="${escapeAttr(p.icon || '')}"></div>
+          <div class="form-grp"><label>Sıra</label><input type="number" data-fld="sort" value="${p.sort ?? 0}"></div>
+          <div class="form-grp">
+            <label style="display:flex;align-items:center;gap:8px">
+              <input type="checkbox" data-fld="published" ${p.published !== false ? 'checked' : ''}> Sayta göstər
+            </label>
+          </div>
+          <div class="form-grp full">
+            <label>URL ünvanı (boş buraxsanız başlıqdan yaranır — dərc olunandan sonra dəyişməyin)</label>
+            <input type="text" data-fld="slug" value="${escapeAttr(p.slug || '')}" placeholder="komputer-temiri-meslehetler">
+          </div>
+          <div class="form-grp full">
+            <label>Üz qabığı şəkli (klikləyib yüklə — 1200×675 tövsiyə olunur)</label>
+            <div class="img-uploader">
+              <input type="hidden" data-fld="image" value="${escapeAttr(p.image || '')}">
+              <input type="file" data-post-file accept="image/*" style="display:none" onchange="uploadPostImage(this, ${i})">
+              <div class="img-preview img-preview-clickable" data-post-prev onclick="_postRow(${i}).querySelector('[data-post-file]').click()">
+                ${p.image ? `<img src="${escapeAttr(p.image)}" alt="">` : '<span class="img-preview-empty">➕ Şəkil</span>'}
+              </div>
+              <div class="img-uploader-actions">
+                <button type="button" class="cancel-btn" onclick="clearPostImage(${i})">🗑️ Sil</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-grp full">
+            <label>Qısa təsvir (siyahıda görünür, 400 simvola qədər)</label>
+            <textarea data-fld="excerpt" rows="3">${escapeHtml(p.excerpt || '')}</textarea>
+          </div>
+          <div class="form-grp full">
+            <label>Mətn (HTML: &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;, &lt;a&gt;)</label>
+            <textarea data-fld="body" rows="14" style="font-family:ui-monospace,Consolas,monospace;font-size:0.82rem">${escapeHtml(p.body || '')}</textarea>
+          </div>
+          <div class="form-grp full">
+            <label>Tez-tez verilən suallar — hər sətirdə: Sual :: Cavab</label>
+            <textarea data-fld="faq" rows="5" placeholder="Təmir nə qədər çəkir? :: Adətən elə həmin gün.">${escapeHtml(faqToText(p.faq))}</textarea>
+          </div>
+          <div class="form-grp full"><label>SEO başlıq (boş qalsa yazının başlığı işlədilir)</label><input type="text" data-fld="meta_title" value="${escapeAttr(p.meta_title || '')}"></div>
+          <div class="form-grp full"><label>SEO təsvir (Google-da görünən mətn, ~155 simvol)</label><textarea data-fld="meta_desc" rows="2">${escapeHtml(p.meta_desc || '')}</textarea></div>
+        </div>
+      </div>
+    `).join('') || '<div class="empty-state"><div class="ico">📝</div><p>Hələ heç bir yazı yoxdur</p></div>';
+  }
+  function _postRow(idx) { return document.querySelector(`[data-post-idx="${idx}"]`); }
+  function collectPosts() {
+    return Array.from(document.querySelectorAll('[data-post-idx]')).map((row, i) => {
+      const get = fld => row.querySelector(`[data-fld="${fld}"]`)?.value.trim() ?? '';
+      return {
+        id: _posts[i]?.id ?? null,
+        title: get('title'),
+        slug: get('slug') || null,
+        icon: get('icon') || null,
+        cat: get('cat') || 'temir',
+        image: get('image') || null,
+        excerpt: get('excerpt') || null,
+        body: get('body') || null,
+        faq: textToFaq(get('faq')),
+        meta_title: get('meta_title') || null,
+        meta_desc: get('meta_desc') || null,
+        sort: parseInt(get('sort'), 10) || 0,
+        published: row.querySelector('[data-fld="published"]').checked,
+      };
+    });
+  }
+  function addPost() {
+    _posts = collectPosts();
+    _posts.push({
+      id: null, title: '', slug: '', icon: '📝', cat: 'temir', image: null,
+      excerpt: '', body: '', faq: [], meta_title: '', meta_desc: '',
+      sort: _posts.length + 1, published: false,
+    });
+    renderPosts();
+  }
+  function removePost(idx) {
+    const collected = collectPosts();
+    collected.splice(idx, 1);
+    _posts = collected;
+    renderPosts();
+  }
+  async function uploadPostImage(input, idx) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    try {
+      showToast('⏳ Şəkil yüklənir...');
+      const url = await apiUpload(file);
+      const row = _postRow(idx);
+      row.querySelector('[data-fld="image"]').value = url;
+      row.querySelector('[data-post-prev]').innerHTML = `<img src="${escapeAttr(url)}" alt="">`;
+      showToast('✅ Yükləndi');
+    } catch (e) {
+      showToast('❌ ' + e.message, true);
+    } finally {
+      input.value = '';
+    }
+  }
+  function clearPostImage(idx) {
+    const row = _postRow(idx);
+    row.querySelector('[data-fld="image"]').value = '';
+    row.querySelector('[data-post-prev]').innerHTML = '<span class="img-preview-empty">➕ Şəkil</span>';
+  }
+  async function savePosts() {
+    const items = collectPosts();
+    for (const it of items) {
+      if (!it.title) { showToast('❌ Başlıq məcburidir', true); return; }
+    }
+    try {
+      const res = await fetch('/api/admin/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ items }),
+      });
+      if (res.status === 401 || res.status === 419) { location.reload(); return; }
+      if (!res.ok) throw new Error('Yadda saxlanmadı');
+      await loadPosts();
+      showToast('✅ Bloq yeniləndi');
     } catch (e) {
       showToast('❌ ' + e.message, true);
     }

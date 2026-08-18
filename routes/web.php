@@ -42,7 +42,7 @@ Route::get('/', function (Request $request) use ($sections) {
     return view('home', $data);
 });
 
-$adminSections = ['dashboard', 'orders', 'hero', 'trust', 'services', 'why', 'about', 'contact', 'products', 'categories', 'add', 'profile', 'testimonials'];
+$adminSections = ['dashboard', 'orders', 'hero', 'trust', 'services', 'why', 'about', 'contact', 'products', 'categories', 'add', 'profile', 'testimonials', 'posts'];
 Route::get('/admin/{section?}', function (?string $section = null) use ($adminSections) {
     $active = in_array($section, $adminSections, true) ? $section : 'dashboard';
     return view('admin', ['activePage' => $active]);
@@ -612,6 +612,86 @@ Route::get('/mehsul/{product}', function (Request $request, Product $product) us
         'contact'  => SiteContent::get('contact'),
     ]);
 })->name('product.show');
+
+// ===== BLOG ADMIN API =====
+Route::get('/api/admin/posts', function () {
+    return response()->json(
+        Post::orderBy('sort_order')->orderBy('id')->get()->map(fn ($p) => [
+            'id'         => $p->id,
+            'title'      => $p->title,
+            'slug'       => $p->slug,
+            'icon'       => $p->icon,
+            'cat'        => $p->cat,
+            'image'      => $p->image,
+            'excerpt'    => $p->excerpt,
+            'body'       => $p->body,
+            'faq'        => is_array($p->faq) ? $p->faq : [],
+            'meta_title' => $p->meta_title,
+            'meta_desc'  => $p->meta_desc,
+            'sort'       => (int) $p->sort_order,
+            'views'      => (int) $p->views,
+            'published'  => (bool) $p->published,
+        ])->all()
+    );
+})->middleware('auth');
+
+Route::post('/api/admin/posts', function (Request $request) {
+    $data = $request->validate([
+        'items'              => 'required|array',
+        'items.*.id'         => 'nullable|integer',
+        'items.*.title'      => 'required|string|max:190',
+        'items.*.slug'       => 'nullable|string|max:190',
+        'items.*.icon'       => 'nullable|string|max:8',
+        'items.*.cat'        => 'required|string|max:40',
+        'items.*.image'      => 'nullable|string|max:255',
+        'items.*.excerpt'    => 'nullable|string|max:400',
+        'items.*.body'       => 'nullable|string',
+        'items.*.faq'        => 'nullable|array',
+        'items.*.faq.*.q'    => 'nullable|string|max:300',
+        'items.*.faq.*.a'    => 'nullable|string|max:1500',
+        'items.*.meta_title' => 'nullable|string|max:190',
+        'items.*.meta_desc'  => 'nullable|string|max:300',
+        'items.*.sort'       => 'nullable|integer',
+        'items.*.published'  => 'nullable|boolean',
+    ]);
+
+    $existingIds = Post::pluck('id')->all();
+    $keptIds = [];
+    foreach ($data['items'] as $item) {
+        $faq = array_values(array_filter(
+            $item['faq'] ?? [],
+            fn ($f) => !empty($f['q']) && !empty($f['a'])
+        ));
+        $payload = [
+            'title'      => $item['title'],
+            'icon'       => $item['icon'] ?: null,
+            'cat'        => array_key_exists($item['cat'], Post::CATS) ? $item['cat'] : 'temir',
+            'image'      => $item['image'] ?: null,
+            'excerpt'    => $item['excerpt'] ?: null,
+            'body'       => $item['body'] ?: null,
+            'faq'        => $faq ?: null,
+            'meta_title' => $item['meta_title'] ?: null,
+            'meta_desc'  => $item['meta_desc'] ?: null,
+            'sort_order' => (int) ($item['sort'] ?? 0),
+            'published'  => (bool) ($item['published'] ?? true),
+        ];
+        // Slug yalnız boş gələndə modeldə qurulur; mövcud yazının URL-i toxunulmaz qalır
+        if (!empty($item['slug'])) {
+            $payload['slug'] = $item['slug'];
+        }
+
+        if (!empty($item['id']) && in_array($item['id'], $existingIds, true)) {
+            $post = Post::find($item['id']);
+            $post->fill($payload)->save();
+            $keptIds[] = $post->id;
+        } else {
+            $keptIds[] = Post::create($payload)->id;
+        }
+    }
+    Post::whereNotIn('id', $keptIds)->delete();
+
+    return response()->json(['ok' => true]);
+})->middleware('auth');
 
 // ===== ORDER TRACKING (public) =====
 Route::get('/order-status', function (Request $request) {
